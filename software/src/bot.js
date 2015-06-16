@@ -1,5 +1,7 @@
 five = require("johnny-five");
 ik = require("./ik");
+draw = require("./draw");
+
 board = new five.Board({
   debug: false
 });
@@ -118,75 +120,4 @@ go = function(x, y, z) {
 
 position = function() {
   return ik.forward(servo1.last.degrees, servo2.last.degrees, servo3.last.degrees);
-}
-
-//Draws a square in order to ensure that everything is working properly
-testSquare = function() {
-  setTimeout(function() { go(-20, 20, -150); }, 0); //Top left 
-  setTimeout(function() { go(20, 20, -150); }, 1000); //Top right
-  setTimeout(function() { go(20, -20, -150); }, 2000); //Bottom right
-  setTimeout(function() { go(-20, -20, -150); }, 3000); //Bottom left
-  setTimeout(function() { go(-20, 20, -150); }, 4000); //Return to start position
-}
-
-//Draws a star to test that the Tapster bot is working properly
-testStar = function() {
-  setTimeout(function() { go(-20, -20, -140); }, 0); //Bottom left
-  setTimeout(function() { go(0, 20, -140); }, 1000); //Top
-  setTimeout(function() { go(20, -20, -140); }, 2000); //Bottom right
-  setTimeout(function() { go(-20, 10, -140); }, 3000); //Left
-  setTimeout(function() { go(20, 10, -140); }, 4000); //Right
-  setTimeout(function() { go(-20, -20, -140); }, 5000); //Starting position
-}
-
-testCircle = function() {
-  var centerX=0;
-  var centerY=0;
-  var radius=20;
- ;
-  // an array to save your points
-  var points=[];
-   
-  // populate array with points along a circle
-  for (var degree=0; degree<360; degree++){
-      var radians = degree * Math.PI/180;
-      var x = centerX + radius * Math.cos(radians);
-      var y = centerY + radius * Math.sin(radians);
-      points.push({x:x,y:y});
-  }
-   
-  circle = function() {
-    for (var i=0; i<360; i+=1) {
-      setTimeout( function(point) { go(point.x, point.y, -141) }, i*2, points[i]);
-    }
-  }
-   
-  circle();
-  }
-
-//Draws an arbitrary amount of spirals to test that the Tapster bot is working properly
-testSpiral = function(spirals) {
-  var centerX = 0;
-  var centerY = 0;
-  var radius = 30;
-  var x1 = 0;
-  var y1 = 0;
-  var points = [];
-  for (var degree = 0; degree < spirals * 360; degree++)
-  {
-    x1 = x1 + 30/(spirals * 360);
-    y1 = y1 + 30/(spirals * 360);
-    var radians = degree * Math.PI/180;
-    var x = centerX + x1 * Math.cos(radians);
-    var y = centerY + y1 * Math.sin(radians);
-    points.push({x:x, y:y});
-  }
-
-  spiral = function() {
-    for (var z = 0; z < spirals*360; z++)
-    {
-      setTimeout( function(point) { go(point.x, point.y, -140) }, z*2, points[z]);
-    }
-  }
-    spiral();
 }
