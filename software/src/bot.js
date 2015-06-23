@@ -2,6 +2,7 @@ five = require("johnny-five");
 ik = require("./ik");
 draw = require("./draw");
 svg = require("./SVGReader");
+config = require("../config");
 
 board = new five.Board({
   debug: false
