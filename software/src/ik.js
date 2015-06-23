@@ -1,13 +1,15 @@
 // Original code from
 // http://forums.trossenrobotics.com/tutorials/introduction-129/delta-robot-kinematics-3276/
 
+var config = require("../config.js");
+
 (function(exports) {
 
   // Specific geometry for Tapster:
-  var e = 34.64101615137754;  // Math.sqrt(3) * 10 * 2
-  var f = 110.85125168440814; // Math.sqrt(3) * 32 * 2
-  var re = 153.5;             // 145 + 8.5
-  var rf = 52.690131903421914; // Math.sqrt(52**2 + 8.5**2)
+  var e = config.e;   // Math.sqrt(3) * 10 * 2
+  var f = config.f;   // Math.sqrt(3) * 32 * 2
+  var re = config.re;              // 145 + 8.5
+  var rf = config.rf;  // Math.sqrt(52**2 + 8.5**2)
 
   exports.updateSize = function(parameters) {
     e = parameters[0];
