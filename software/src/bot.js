@@ -1,6 +1,7 @@
 five = require("johnny-five");
 ik = require("./ik");
 draw = require("./draw");
+svg = require("./SVGReader");
 
 board = new five.Board({
   debug: false
@@ -112,9 +113,9 @@ go = function(x, y, z) {
   rotated = rotate(reflected[0],reflected[1]);
   
   angles = ik.inverse(rotated[0], rotated[1], z);
-  servo1.to((angles[1]).map( 0 , 90 , 8 , 90 ));
-  servo2.to((angles[2]).map( 0 , 90 , 8 , 90 ));
-  servo3.to((angles[3]).map( 0 , 90 , 8 , 90 ));
+  servo1.to((angles[1]).map(config.servo1.in_min, config.servo1.in_max, config.servo1.out_min, config.servo1.out_max));
+  servo2.to((angles[2]).map(config.servo2.in_min, config.servo2.in_max, config.servo2.out_min, config.servo2.out_max));
+  servo3.to((angles[3]).map(config.servo3.in_min, config.servo3.in_max, config.servo3.out_min, config.servo3.out_max));
   console.log(angles);
 }
 
