@@ -1,11 +1,18 @@
 five = require("johnny-five");
-ik = require("./ik");
+kinematics = require("./kinematics");
 draw = require("./draw");
 svg = require("./SVGReader");
 config = require("../config");
 
 board = new five.Board({
   debug: false
+});
+
+k = new kinematics.Kinematics({
+  e: config.e,
+  f: config.f,
+  re: config.re,
+  rf: config.rf
 });
 
 board.on("ready", function() {
@@ -113,7 +120,7 @@ go = function(x, y, z) {
   reflected = reflect(x,y);
   rotated = rotate(reflected[0],reflected[1]);
   
-  angles = ik.inverse(rotated[0], rotated[1], z);
+  angles = k.inverse(rotated[0], rotated[1], z);
   servo1.to((angles[1]).map(config.servo1.in_min, config.servo1.in_max, config.servo1.out_min, config.servo1.out_max));
   servo2.to((angles[2]).map(config.servo2.in_min, config.servo2.in_max, config.servo2.out_min, config.servo2.out_max));
   servo3.to((angles[3]).map(config.servo3.in_min, config.servo3.in_max, config.servo3.out_min, config.servo3.out_max));
@@ -121,5 +128,5 @@ go = function(x, y, z) {
 }
 
 position = function() {
-  return ik.forward(servo1.last.degrees, servo2.last.degrees, servo3.last.degrees);
+  return k.forward(servo1.last.degrees, servo2.last.degrees, servo3.last.degrees);
 }

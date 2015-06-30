@@ -16,7 +16,9 @@
    "engines":{
       "node":"0.x.x"
    },
-   "dependencies":{
-      "johnny-five":"0.7.x"
+   "dependencies": {
+     "johnny-five": "0.8.x",
+     "svg-path-parser": "^1.0.1",
+     "xml2js": "^0.4.9"
    }
 }
