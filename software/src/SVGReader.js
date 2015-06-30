@@ -1,29 +1,35 @@
 //Draws stuff from SVG files
 //Built with InkScape in mind, but should support:
 //http://svg-edit.googlecode.com/svn/branches/stable/editor/svg-editor.html
-
 //> To test:
-//> svg.draw("filename.svg")
+//> svgRead.drawSVG(filepath)
 
 var parse = require('svg-path-parser');
 var fs = require('fs');
-var config = require('../config.js');
 var parseString = require('xml2js').parseString;
 
-//filename must be a string. ".svg" is optional
-//Right now, the file is assumed to be in the software folder
-//To-do: Add support for arbitrary file locations
-exports.draw = function(filename) {
-	var parsed;
+function SVGReader(args) {
+	this.baseWidth = 0;
+	this.baseHeight = 0;
 
-	if (filename.search(".svg") == -1) //Ensures that filename is valid and points to an .svg
-		filename += ".svg";
+	if (args) {
+    var keys = Object.keys(args)
+    keys.forEach(function(key){
+      this[key] = args[key]
+    }, this)
+  }
+}
+
+//Draws from an SVG image specified by filepath
+//> Usage:
+//> drawSVG("C:/Projects/Tapsterbot/software/src/drawing.svg");
+SVGReader.prototype.drawSVG = function(filePath) {
+	var parsed;
 
 	//Create a JSON string out of the SVG image data
 	//parseString strips away the XML data
-
 	try {
-	parseString(fs.readFileSync("../" + filename, "utf8"), function(err, result) {
+	parseString(fs.readFileSync(filePath, "utf8"), function(err, result) {
 		parsed = JSON.stringify(result, null, 1);
 	});
 	} catch (e) {
@@ -32,12 +38,13 @@ exports.draw = function(filename) {
 		else
 			throw e;
 
-		return;
+		return; //If the file is not found stop execution
 	}
 
 	//Parse the JSON string into an array
 	objArr = JSON.parse(parsed);
 
+	//Extract width and height data from the drawing
 	var svgDimensions = dimensionConversion(objArr.svg.$.width, objArr.svg.$.height);
 	width = svgDimensions.width;
 	height = svgDimensions.height; 
@@ -55,9 +62,9 @@ exports.draw = function(filename) {
 		transformY = parseInt(transString.substring(subY + 1));
 	}
 
-	var phoneWidth = config.baseWidth;
-	var phoneHeight = config.baseHeight;
-	penHeight = config.penHeight;
+	var phoneWidth = this.baseWidth;
+	var phoneHeight = this.baseHeight;
+	penHeight = -140
 
 	widthRatio = width / phoneWidth;
 	heightRatio = height / phoneHeight;
@@ -70,17 +77,17 @@ exports.draw = function(filename) {
 	if (objArr.svg.g[0].g) {  //If there are multiple groups
 		for (var i = 0; i < objArr.svg.g[0].g.length; i++) {
 			pathArray = objArr.svg.g[0].g[i].path;
-			drawSVG();
-		}
+			drawImage();
+		} 
 	}
 
 	else if (objArr.svg.g[0].path) {
 		pathArray = objArr.svg.g[0].path;
-		drawSVG();
+		drawImage();
 	}
 }
 
-drawSVG = function() {
+drawImage = function() {
 	var d = "";
 	for (var i = 0; i < pathArray.length; i++) { //When drawing multiple lines, there are multiple paths
 		firstPoint = "";
@@ -504,3 +511,5 @@ var penHeight;
 
 var transformX;
 var transformY;
+
+module.exports.SVGReader = SVGReader;
