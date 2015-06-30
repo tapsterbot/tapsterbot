@@ -40,7 +40,9 @@ doSetTimeout = function(x, y, z, delay) {
 };
 
 //Initialized out here so that they are accessible from the mapPoints function
-var baseHeight, baseWidth, canvasHeight, canvasWidth, penHeight, heightRatio, widthRatio, halfway;
+var baseHeight, baseWidth, canvasHeight, canvasWidth, heightRatio, widthRatio, halfway;
+
+var penHeight = -140;
 
 //A timer variable for use with doSetTimeout()
 var timer = 0;
@@ -58,9 +60,6 @@ Draw.prototype.drawFromCoordinates = function() {
   baseWidth = this.baseWidth;
   canvasHeight = baseHeight * 3.779527559; //Set ratio of ~1:3.8 mm:px
   canvasWidth = baseWidth * 3.779527559;
-
-  //The Z coordinate of the pen, for drawing
-  penHeight = -140;
 
   //The ratio between the sizes of the canvas and robot.
   //It will always be 3.779527559 because the canvas size is set
@@ -90,7 +89,7 @@ Draw.prototype.drawFromCoordinates = function() {
       transMap = mapPoints(point.x, point.y);
       doSetTimeout(transMap.x, transMap.y, penHeight + 20, 200); 
     }
-    
+
     else { //Only one line to be drawn
       point = objArr[i];
       var mapped = mapPoints(point.x, point.y);
