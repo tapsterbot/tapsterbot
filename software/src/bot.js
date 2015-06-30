@@ -1,18 +1,65 @@
 five = require("johnny-five");
 kinematics = require("./kinematics");
-draw = require("./draw");
 svg = require("./SVGReader");
-config = require("../config");
+drawing = require("./draw");
 
-board = new five.Board({
-  debug: false
-});
+//If a filepath is specified, load that config
+//Otherwise, resort to the default config
+//> Usage: 
+//> node bot.js "C:\Projects\Tapsterbot\software\config.js"
+if (process.argv[2]) {
+  try {
+    var config = require(process.argv[2]);
+    console.log("Config found and loaded.");
+  } catch (e) {
+    console.log("Config not found. Loading default.");
+    var config = require("../config.js");
+  }
+}
+else {
+  console.log("Config not specified. Loading default.");
+  var config = require("../config.js");
+}
+
+//Alternate config loading code
+//If a Tapster version is specified, load that config
+//Otherwise resort to the default config
+//> Usage:
+//> node bot.js "Tapster-2-plus"
+
+/*if (process.argv[2]) {
+  try {
+    var config = require("../" + process.argv[2] + ".js");
+    console.log("Config found and loaded.");
+  } catch (e) {
+    console.log("Config not found. Loading default.");
+    var config = require("../config.js");
+  }
+} 
+else {
+  console.log("Config not specified. Loading default.");
+  var config = require("../config.js");
+} */
 
 k = new kinematics.Kinematics({
   e: config.e,
   f: config.f,
   re: config.re,
   rf: config.rf
+});
+
+svgRead = new svg.SVGReader({
+  baseWidth: config.baseWidth,
+  baseHeight: config.baseHeight
+});
+
+draw = new drawing.Draw({
+  baseWidth: config.baseWidth,
+  baseHeight: config.baseHeight
+});
+
+board = new five.Board({
+  debug: false
 });
 
 board.on("ready", function() {
