@@ -224,7 +224,7 @@ Draw.prototype.drawSpiral= function(spirals, radius, zLevel) {
 
   go(centerX, centerY, penHeight);
 
-  for (var degree = 0; degree < spirals * 360; degree++) {
+  for (var degree = 0; degree < spirals * 360 + 94; degree++) {
     x1 = x1 + radius/(spirals * 360);
     y1 = y1 + radius/(spirals * 360);
     var radians = degree * Math.PI/180;
@@ -234,7 +234,7 @@ Draw.prototype.drawSpiral= function(spirals, radius, zLevel) {
   }
 
   spiral = function() {
-    for (var z = 0; z < spirals*360; z++) {
+    for (var z = 0; z < spirals*360 + 94; z++) {
       point = points[z];
       doSetTimeout(point.x, point.y, penHeight, 5);
     }
@@ -243,6 +243,12 @@ Draw.prototype.drawSpiral= function(spirals, radius, zLevel) {
 }; 
 
 Draw.prototype.pickUpEraser = function() {
+  doSetTimeout(currentPoint.x, currentPoint.y, -130, 500);
+  doSetTimeout(0, 50, -130, 500);
+  doSetTimeout(0, 50, -148, 500);
+  doSetTimeout(0, 0, -148, 500);
+
+  /*
   timer = 0;
   doSetTimeout(currentPoint.x, currentPoint.y, -130, 500);
   doSetTimeout(65, 25, -130, 500);
@@ -260,15 +266,16 @@ Draw.prototype.pickUpEraser = function() {
     }
 
     doSetTimeout(x, y, -148, 100);
-  }
+  } */
 }
 
 Draw.prototype.eraseBoard = function() {
-  this.drawSpiral(5, 60, -148); //Draws a spiral to erase most of the board
+  this.drawSpiral(5, 55, -148); //Draws a spiral to erase most of the board
 
-  //Erases the edges of the board
+  //WIP code for erasing the very edges of the board
+  //Commented by default because it's not reliable
+  /*
   doSetTimeout(70, 10, -148, 7500);
-
   itGo(40, 60, -149, 5, 500);
   itGo(10, 55, -149, 5, 500);
   itGo(-40, 55, -149, 5, 500);
@@ -279,19 +286,26 @@ Draw.prototype.eraseBoard = function() {
   itGo(0, -60, -149, 5, 500);
   itGo(30, -60, -149, 5, 500);
   itGo(50, -20, -149, 5, 500);
+  */
+
 }
 
 Draw.prototype.dropOffEraser = function() {
-  doSetTimeout(55, 20, -148, 500);
+ // doSetTimeout(0, 50, -148, 500);
+ doSetTimeout(-1, 50, -130, 500);
+ doSetTimeout(0, 0, -130, 500);
+
+  /* doSetTimeout(55, 20, -148, 500);
   doSetTimeout(63, 25, -130, 500);
-  doSetTimeout(0, 0, -130, 500);
+  doSetTimeout(0, 0, -130, 500); */
 }
 
 Draw.prototype.erase = function() {
   var objRef = this;
   setTimeout(function() { objRef.pickUpEraser() }, 0);
-  setTimeout(function() { objRef.eraseBoard() }, 5000);
-  setTimeout(function() { objRef.dropOffEraser() }, 5001);
+  setTimeout(function() { objRef.eraseBoard() }, 3000);
+  setTimeout(function() { objRef.dropOffEraser() }, 10000);
+  console.log(timer);
 }
 
 module.exports.Draw = Draw;
