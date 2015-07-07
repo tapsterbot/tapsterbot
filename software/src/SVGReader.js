@@ -14,9 +14,9 @@ function SVGReader(args) {
 	this.baseHeight = 0;
 
 	if (args) {
-    var keys = Object.keys(args)
-    keys.forEach(function(key){
-      this[key] = args[key]
+    	var keys = Object.keys(args)
+    	keys.forEach(function(key){
+      	this[key] = args[key]
     }, this)
   }
 }
@@ -24,9 +24,16 @@ function SVGReader(args) {
 //Draws from an SVG image specified by filepath
 //> Usage:
 //> drawSVG("C:/Projects/Tapsterbot/software/src/drawing.svg");
-SVGReader.prototype.drawSVG = function(filePath) {
+//connect is a special flag that indicates that each path should be drawn connected to each other
+//It is really only used for drawing in cursive and does not need to be specified otherwise
+SVGReader.prototype.drawSVG = function(filePath, connect) {
 	timer = 0;
 	var parsed;
+
+	if (connect)
+		connected = connect;
+	else
+		connected = null;
 
 	objRef = this;
 
@@ -68,7 +75,7 @@ SVGReader.prototype.drawSVG = function(filePath) {
 
 	var phoneWidth = this.baseWidth;
 	var phoneHeight = this.baseHeight;
-	penHeight = -152.5;
+	penHeight = this.drawHeight;
 
 	widthRatio = width / phoneWidth;
 	heightRatio = height / phoneHeight;
@@ -83,15 +90,24 @@ SVGReader.prototype.drawSVG = function(filePath) {
 		} 
 	}
 
-	else if (objArr.svg.g[0].path) {
+	else if (objArr.svg.g.length > 0) { //Depending on how the paths are grouped, it is possible that this value can be greater than zero
+		for (var i = 0; i < objArr.svg.g.length; i++) { //If this is the case, loop through the array to get the path data
+			pathArray = objArr.svg.g[i].path;
+			drawImage(pathArray);
+		}
+	}
+
+	else if (objArr.svg.g[0].path) { //If there is only one group
 		pathArray = objArr.svg.g[0].path;
 		drawImage(pathArray);
 	}
+
+	//svg.drawSVG("C:/Projects/Tapsterbot/software/src/drawing.svg", true)
 }
 
 drawImage = function(pathArray) {
 	var d = "";
-	console.log(pathArray);
+	firstMove = null; //After a group is done being drawn, firstMove is reset as there has not yet been a first move made in the next group
 	for (var i = 0; i < pathArray.length; i++) { //When drawing multiple lines, there are multiple paths
 		firstPoint = null;
 		d = pathArray[i].$.d; 
@@ -108,10 +124,23 @@ drawImage = function(pathArray) {
 
 //Move from one point to (x, y)
 move = function(x, y) {
-	doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 150);
-	doSetTimeout(mapX(x), mapY(y), penHeight + 10, 150);
-	doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+	if (!connected) { //If the paths should not be connected, lift up the pen and move over so that a line is not drawn
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 150);
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, 150);
+		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+	}
+	else if (connected && !firstMove) { //If the paths should be connected and a move has not been made, lift up the pen and move to the first point
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 150);
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, 150);
+		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+	}
+	else //If the paths should be connected and a move has been made, just draw a line between the two paths
+		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+
 	currentPoint = {x:x, y:y}; //Update the current point (done every time an SVG command is called)
+
+	if (!firstMove) //Keeps track of if a move has been made or not.
+		firstMove = true;
 
 	if (!firstPoint) //Keeps track of the first point, for use with the Z/z command
 		firstPoint = {x:currentPoint.x, y:currentPoint.y}; //Since the first command of a path is always to Move, this check only occurs here
@@ -165,7 +194,7 @@ cubicCurve = function(x1, y1, x2, y2, x, y) {
 	var curvePts = new Array();
 	curvePts = b(x1, y1, x2, y2, x, y, 5); //5 is an arbitrarily-chosen value. It creates a smooth-looking curve without calculating too many points
 	for (var i = 0;i < curvePts.length; i++) 
-		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, 2);
+		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, 15);
 }
 
 //Draws a relative cubic Bezier curve
@@ -320,6 +349,7 @@ doSetTimeout = function(x, y, z, delay) {
  	timer = timer + delay; 
 };
 
+//A function for setting the penHeight from the command line
 setPenHeight = function(penHeight) {
 	penHeight = penHeight;
 }
@@ -505,22 +535,26 @@ SVGReader.prototype.interpretCommands = function(commands) {
 			relArc(commands[i].rx, commands[i].ry, commands[i].xAxisRotation, commands[i].largeArc, commands[i].sweep, commands[i].x, commands[i].y);
 		
 		else if (cmdCode == 'Z' || cmdCode == 'z') {
-			(firstPoint.x, firstPoint.y);
+			line(firstPoint.x, firstPoint.y);
 			firstPoint = null;
 		}
 	}
 }
 
+//Creates a working clock
+//To-do: Add support for user-specified fonts
 SVGReader.prototype.clock = function() {
-	var dimensions = dimensionConversion("80mm", "95mm");
+	var dimensions = dimensionConversion("80mm", "95mm"); //Since no dimensions are specified, assume the default
+														  //To-do: Pul this from a config file
 	width = dimensions.width;
 	height = dimensions.height;
 
 	timer = 0;
 
-	var drawing = new draw.Draw({
+	var drawing = new draw.Draw({ //draw is used for the erase function
 		baseWidth: this.baseWidth,
-		baseHeight: this.baseHeight
+		baseHeight: this.baseHeight,
+		drawHeight: this.drawHeight
 	});
 
 	var phoneWidth = this.baseWidth;
@@ -529,10 +563,12 @@ SVGReader.prototype.clock = function() {
 	widthRatio = width / phoneWidth;
 	heightRatio = height / phoneHeight;
 
-	penHeight = -152.5;
+	penHeight = this.drawHeight;
 	halfway = {x:width / 2, y:height / 2};
 	currentPoint = {x:halfway.x, y:halfway.y}; //Start at the center of the canvas, which corresponds to (0,0) on the Tapster
 
+	//Currently hardcoded path data
+	//To-do: Allow users to specify fonts
 	var zero = "M 40.890286,241.44557 30.687127,245.57254 23.885021,257.95342 20.483968,278.58823 20.483968,290.96912 23.885021,311.60393 30.687127,323.98482 40.890286,328.11178 47.692392,328.11178 57.895551,323.98482 64.697657,311.60393 68.09871,290.96912 68.09871,278.58823 64.697657,257.95342 57.895551,245.57254 47.692392,241.44557 40.890286,241.44557";
 	var one = "M 50.289453,243.07635 50.289453,329.52761";
 	var two = "M 27.618803,262.08031 27.618803,257.95271 30.945521,249.69749 34.27224,245.56989 40.925676,241.44228 54.23255,241.44228 60.885986,245.56989 64.212704,249.69749 67.539423,257.95271 67.539423,266.20792 64.212704,274.46313 57.559268,286.84595 24.292085,328.12202 70.866141,328.12202";
@@ -546,32 +582,53 @@ SVGReader.prototype.clock = function() {
 
 	pathData = [zero, one, two, three, four, five, six, seven, eight, nine];
 
-	var colon = "M 175.73227,307.21546 175.81889,307.21546 175.81889,307.21262 175.73227,307.21262 175.73227,307.21546 Z M 175.73227,253.34648 175.81889,253.34648 175.81889,270.34364 175.73227,270.34364 175.73227,253.34648 Z";
+	var colon = "M 165.73227,300.21546 Z M 165.73227,253.34648 Z";
+	var arrayTime = new Array();
 
 	objRef = this;
 
+	//Simple function for converting units in millimeters to units in pixels
+	//Based on the fixed ratio between mm and px
 	toPixels = function(mm) {
 		return mm * 3.779527559;
 	}
 
-	drawTime = function(arrayOfPaths) {
+	//Draws the time
+	//Takes an array of path data and a callback function
+	drawTime = function(arrayOfPaths, callback) {
 		for (var i = 0; i < arrayOfPaths.length; i++) {
-			objRef.interpretCommands(arrayOfPaths[i]);
+			objRef.interpretCommands(arrayOfPaths[i]); //Interprets the path data and draws the number
 
-			if (i == 1)
+			firstPoint = null;
+
+			if (i == 1) //Inserts the colon between the second and third number
 				objRef.interpretCommands(parse(colon));
 		}
 		doSetTimeout(0, 0, -140, 250);
+		setTimeout(function() { endTime = new Date().getTime() }, timer + 1); //Gets the time after drawTime finishes executing
+		//Because of the way doSetTimeout works, timer + 1 occurs (is meant to occur) a millisecond after the doSetTimeout call
+		setTimeout(function() { difference = endTime - startTime }, timer + 3);
+		setTimeout(function() { callback() }, timer + 4);
 	}
 
+	//Gets the curent time and converts it into an array of four digits
+	//The first two digits are the hours, the last two are the minutes
 	getTheTime = function() {
 		var currentTime = new Date()
 		var hours = String(currentTime.getHours());
 		var minutes = String(currentTime.getMinutes());
 
+		//Converts from 24 hour time to 12 hour time
+		if (hours > 12)
+			hours -= 12;
+		else if (hours === 0)
+			hours = 12;
+
+		//Adds a placeholder zero to ensure that there are four digits in the time
+		//The zero is not actually drawn
 		if (hours < 10)
 			hours = "0" + hours;
-		1
+		
 		if (minutes < 10)
 			minutes = "0" + minutes;
 
@@ -583,46 +640,119 @@ SVGReader.prototype.clock = function() {
 		for (var i = 0; i < minutes.length; i++) {
 			timeArray.push(minutes.charAt(i));
 		}
-
+		arrayTime = timeArray; //Stores the array in another variable so it can be accessed elsewhere without calling the function again
 		return timeArray;
 	}
 
+	//Converts the digits in the timeArray into path data
 	convertToPath = function(timeArray) {
-	var pathArray = new Array();
-	var offset = toPixels(5);
-	var commandArray = new Array();
-	for (var i = 0; i < timeArray.length; i++) {
-		var data = pathData[timeArray[i]];
-		var commands = parse(data);
+		var pathArray = new Array();
+		var offset = toPixels(3); //The first digit is drawn three mm from the left side
+		var commandArray = new Array();
+		//Loops through the digits in timeArray
+		for (var i = 0; i < timeArray.length; i++) {
+			if (i == 0 && timeArray[i] == 0) { //If the first digit is 0 (if the hours < 10) AND the loop is on the first digit
+				offset += toPixels(5); //Changes the offset so that the three digits that will be drawn will be centered
+				commandArray.push(["Z"]); //The Z command, without a firstPoint value, will not draw anything, but can still be interpreted without errors
+				colon = "M 118.73227,307.21546 Z M 118.73227,253.34648 Z"; //Changes the path data of the colon so that it will still be in the correct location
+			}
+			else {
+				var data = pathData[timeArray[i]]; 
+				var commands = parse(data);
 
-		for (var x = 0; x < commands.length; x++) {
-			if (commands[x].code != 'Z' || commands[x].code != 'z') {
-				commands[x].x += offset;
-				if (commands[x].x1)
-					commands[x].x1 += offset;
-				if (commands[x].x2)
-					commands[x].x2 += offset;
+				//Loops through the commands in the array and adds the offset to each x value
+				for (var x = 0; x < commands.length; x++) {
+					if (commands[x].code != 'Z' || commands[x].code != 'z') { //Every command but the close path commands have an x value
+						commands[x].x += offset;
+						if (commands[x].x1) //Some commands (curves and arcs) have an x1 value
+							commands[x].x1 += offset;
+						if (commands[x].x2) //Some commands (cubic curves) have an x2 value
+							commands[x].x2 += offset;
+					}
+				}
+
+				commandArray.push(commands);
+
+				if (timeArray[0] != 0) 
+					colon = "M 165.73227,300.21546 Z M 165.73227,253.34648 Z"; //Ensures that the colon has the correct path data
+				//Withotu this check, once the time changes from hours < 10 to hours >= 10, the colon would be in the incorrect place
+
+				offset += toPixels(18); //Adds an offset to each digit
+				//Each digit should be 15mm wide, with 3mm space between each digit
+				if (i == 1)
+					offset += toPixels(4); //Adds an extra 4mm of space to account for the colon
 			}
 		}
 
-		commandArray.push(commands);
-
-		offset += toPixels(18);
-		if (i == 1)
-			offset += toPixels(4);
-		}
-	return commandArray;
+		return commandArray;
 	}
 
+	//Draws a circle to indicate the amount of time left in the minute
+	timeCircle = function() {
+		timer = 0;
+
+		//Draws a circle, given an array of points and the amount of delay in between each point
+	  	circle = function(array, delay) { 
+		    for (var i=0; i<array.length; i+=1) {
+		      	point = array[i];
+	      		doSetTimeout(point.x, point.y, -140, delay);
+	    	}
+	  	}
+
+	  	//Calculates the amount of time left in the minute, based on the difference between the time the erase function was called and the time the drawTime function ended
+	  	calcTimeLeft = function() {
+	  		difference += 500; //Add half a second of padding just to be safe
+	  		return 60000 - difference; //Everything is in milliseconds to keep calculations simple
+	  	}
+
+	  	//Calculates the amount of delay between each point based on the amount of time left and the amount of points to draw
+	  	calcDelay = function(timeLeft, points) {
+	  		msPerPt = timeLeft / points;
+	  		return msPerPt;
+	  	}
+
+	  	var radius = 54;
+	  	var centerX = 0;
+	  	var centerY = -5;
+	  	var points = new Array();
+
+	  	//Populates the array with points
+	  	//Draws more than 360 points because it needs to go slightly over to align with the eraser hole
+	  	//To-do: Figure out why it eventually fails
+	  	for (var degree = 360; degree > -2; degree--) { 
+	  		var radians = (degree + 90) * Math.PI/180; //Add 90 to degree so that the circle starts at the top, not at the right
+			var x = centerX + radius * Math.cos(radians);
+		    var y = centerY + radius * Math.sin(radians);
+		    points.push({x:x,y:y});
+	  	}
+
+	  	setTimeout(function() { circle(points, calcDelay(calcTimeLeft(), points.length)) }, 0);
+	}
+
+	//Tells the time
 	tellTime = function() {
 		timer = 0;
-		setTimeout(function() { drawing.erase() }, 0);
-		setTimeout(function() { drawTime(convertToPath(getTheTime())) }, 12500);
-		//drawTime(convertToPath([1, 7, 1, 7]));
+
+		startTime = new Date().getTime();
+
+		drawing.erase(function() {
+			drawTime(convertToPath(getTheTime()), function() {
+				timeCircle();
+			});
+		});
+		//setTimeout(function() { drawTime(convertToPath(getTheTime())) }, 12500);
+		//setTimeout(function() { drawTime(convertToPath([0, 8, 5, 8]))}, 12500);
+		//setTimeout(function() { timeCircle() }, 12501);
 	}
 
 	tellTime();
-	setInterval(function() { tellTime() }, 60000);	
+	clockTimer = setInterval(function() { tellTime() }, 60000); //Repeat every 60 seconds
+}
+
+//A function to stop the clock
+//The clock will finish erasing, drawing, and moving the arms in a circle, but it will not Repeat
+SVGReader.prototype.clearClock = function() {
+	clearInterval(clockTimer);
 }
 
 
@@ -645,5 +775,11 @@ var penHeight;
 var transformX;
 var transformY;
 var objRef;
+var connected;
+var startTime;
+var endTime;
+var difference;
+var clockTimer;
+var firstMove;
 
 module.exports.SVGReader = SVGReader;
