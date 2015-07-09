@@ -12,14 +12,21 @@ var parseString = require('xml2js').parseString;
 function SVGReader(args) {
 	this.baseWidth = 0;
 	this.baseHeight = 0;
+	this.drawHeight = 0;
 
 	if (args) {
     	var keys = Object.keys(args)
     	keys.forEach(function(key){
-      	this[key] = args[key]
-    }, this)
-  }
+      		this[key] = args[key]
+    	}, this)
+  	}
+	objRef = this;
 }
+
+//The time, in milliseconds, for each command to execute
+//Note: Some commands, such as Move, can take more than this amount of time to execute
+//To-do: Pull this from a config file?
+var delay = 150;
 
 //Draws from an SVG image specified by filepath
 //> Usage:
@@ -40,7 +47,7 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 	//Create a JSON string out of the SVG image data
 	//parseString strips away the XML data
 	try {
-	parseString(fs.readFileSync(filePath, "utf8"), function(err, result) {
+		parseString(fs.readFileSync(filePath, "utf8"), function(err, result) {
 		parsed = JSON.stringify(result, null, 1);
 	});
 	} catch (e) {
@@ -64,7 +71,6 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 	transformY = 0;
 
 	//Check for translation and account for it
-	//To-do: Do this more elegantly
 	if (objArr.svg.g[0].$ && objArr.svg.g[0].$.transform) { //Done in multiple checks to avoid errors being thrown
 		var transString = objArr.svg.g[0].$.transform;
 		var subX = transString.indexOf("(");
@@ -102,7 +108,8 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 		drawImage(pathArray);
 	}
 
-	//svg.drawSVG("C:/Projects/Tapsterbot/software/src/drawing.svg", true)
+	doSetTimeout(0, 49, -130, delay);
+	setTimeout(function() { timer = 0 }, timer + 5);
 }
 
 drawImage = function(pathArray) {
@@ -119,23 +126,23 @@ drawImage = function(pathArray) {
 			doSetTimeout(mapX(parse(pathArray[i+1].$.d)[0].x), mapY(parse(pathArray[i+1].$.d)[0].y), penHeight, 300);
 		}  */
 	}
-	doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 300);
+	doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay);
 }
 
 //Move from one point to (x, y)
 move = function(x, y) {
 	if (!connected) { //If the paths should not be connected, lift up the pen and move over so that a line is not drawn
-		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 150);
-		doSetTimeout(mapX(x), mapY(y), penHeight + 10, 150);
-		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay);
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay);
+		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
 	}
 	else if (connected && !firstMove) { //If the paths should be connected and a move has not been made, lift up the pen and move to the first point
-		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, 150);
-		doSetTimeout(mapX(x), mapY(y), penHeight + 10, 150);
-		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay);
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay);
+		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
 	}
 	else //If the paths should be connected and a move has been made, just draw a line between the two paths
-		doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
 
 	currentPoint = {x:x, y:y}; //Update the current point (done every time an SVG command is called)
 
@@ -156,7 +163,7 @@ relMove = function(x, y) {
 
 //Draw a line from one point to (x, y)
 line = function(x, y) {
-	doSetTimeout(mapX(x), mapY(y), penHeight, 150);
+	doSetTimeout(mapX(x), mapY(y), penHeight, delay);
 	currentPoint = {x:x, y:y};
 }
 
@@ -194,7 +201,7 @@ cubicCurve = function(x1, y1, x2, y2, x, y) {
 	var curvePts = new Array();
 	curvePts = b(x1, y1, x2, y2, x, y, 5); //5 is an arbitrarily-chosen value. It creates a smooth-looking curve without calculating too many points
 	for (var i = 0;i < curvePts.length; i++) 
-		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, 15);
+		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay / curvePts.length);
 }
 
 //Draws a relative cubic Bezier curve
@@ -227,7 +234,7 @@ quadraticCurve = function(x1, y1, x, y) {
 	var curvePts = new Array();
 	curvePts = q(x1, y1, x, y, 5);
 	for (var i = 0; i < curvePts.length; i++) 
-		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, 2);
+		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay / curvePts.length);
 }
 
 //Draws a relative quadratic Bezier curve
@@ -331,7 +338,7 @@ arc = function(rx, ry, rotation, largeArc, sweep, x, y) {
 	var ptArray = a(rx, ry, largeArc, sweep, x, y, 7);
 
 	for (var i = 0; i < ptArray.length; i++) {
-		doSetTimeout(mapX(ptArray[i].x), mapY(ptArray[i].y), penHeight, 75);
+		doSetTimeout(mapX(ptArray[i].x), mapY(ptArray[i].y), penHeight, delay / ptArray.length);
 	}
 }
 
@@ -344,9 +351,9 @@ relArc = function(rx, ry, rotation, largeArc, sweep, x, y) {
 }
 
 //A separate setTimeout method so that delays work properly
-doSetTimeout = function(x, y, z, delay) {
+doSetTimeout = function(x, y, z, timeDelay) {
  	setTimeout(function() { go(x, y, z) }, timer);
- 	timer = timer + delay; 
+ 	timer = timer + timeDelay; 
 };
 
 //A function for setting the penHeight from the command line
@@ -545,16 +552,20 @@ SVGReader.prototype.interpretCommands = function(commands) {
 //To-do: Add support for user-specified fonts
 SVGReader.prototype.clock = function() {
 	var dimensions = dimensionConversion("80mm", "95mm"); //Since no dimensions are specified, assume the default
-														  //To-do: Pul this from a config file
+														  //To-do: Pull this from a config file
 	width = dimensions.width;
 	height = dimensions.height;
 
-	timer = 0;
+	objRef = this;
 
-	var drawing = new draw.Draw({ //draw is used for the erase function
-		baseWidth: this.baseWidth,
-		baseHeight: this.baseHeight,
-		drawHeight: this.drawHeight
+	timer = 0;
+	connected = false;
+
+	//Used to access the erase functions
+	var drawing = new draw.Draw({ 
+		baseWidth: objRef.baseWidth,
+		baseHeight: objRef.baseHeight,
+		drawHeight: objRef.drawHeight
 	});
 
 	var phoneWidth = this.baseWidth;
@@ -604,7 +615,7 @@ SVGReader.prototype.clock = function() {
 			if (i == 1) //Inserts the colon between the second and third number
 				objRef.interpretCommands(parse(colon));
 		}
-		doSetTimeout(0, 0, -140, 250);
+		doSetTimeout(0, 0, -140, delay);
 		setTimeout(function() { endTime = new Date().getTime() }, timer + 1); //Gets the time after drawTime finishes executing
 		//Because of the way doSetTimeout works, timer + 1 occurs (is meant to occur) a millisecond after the doSetTimeout call
 		setTimeout(function() { difference = endTime - startTime }, timer + 3);
@@ -675,7 +686,7 @@ SVGReader.prototype.clock = function() {
 
 				if (timeArray[0] != 0) 
 					colon = "M 165.73227,300.21546 Z M 165.73227,253.34648 Z"; //Ensures that the colon has the correct path data
-				//Withotu this check, once the time changes from hours < 10 to hours >= 10, the colon would be in the incorrect place
+				//Without this check, once the hours changed from single to double digits, the colon would be in the incorrect place
 
 				offset += toPixels(18); //Adds an offset to each digit
 				//Each digit should be 15mm wide, with 3mm space between each digit
@@ -692,10 +703,10 @@ SVGReader.prototype.clock = function() {
 		timer = 0;
 
 		//Draws a circle, given an array of points and the amount of delay in between each point
-	  	circle = function(array, delay) { 
+	  	circle = function(array, timeDelay) { 
 		    for (var i=0; i<array.length; i+=1) {
 		      	point = array[i];
-	      		doSetTimeout(point.x, point.y, -140, delay);
+	      		doSetTimeout(point.x, point.y, -140, timeDelay);
 	    	}
 	  	}
 
@@ -718,7 +729,6 @@ SVGReader.prototype.clock = function() {
 
 	  	//Populates the array with points
 	  	//Draws more than 360 points because it needs to go slightly over to align with the eraser hole
-	  	//To-do: Figure out why it eventually fails
 	  	for (var degree = 360; degree > -2; degree--) { 
 	  		var radians = (degree + 90) * Math.PI/180; //Add 90 to degree so that the circle starts at the top, not at the right
 			var x = centerX + radius * Math.cos(radians);
@@ -750,9 +760,102 @@ SVGReader.prototype.clock = function() {
 }
 
 //A function to stop the clock
-//The clock will finish erasing, drawing, and moving the arms in a circle, but it will not Repeat
+//The clock will finish erasing, drawing, and moving the arms in a circle, but it will not repeat
 SVGReader.prototype.clearClock = function() {
 	clearInterval(clockTimer);
+	console.log("Stopping clock.");
+}
+
+//Says 'hello' in multiple languages
+SVGReader.prototype.hello = function() {
+	timer = 0;
+	var fileArray = fs.readdirSync("./hello");
+	var fileNum;
+	objRef = this;
+
+	//Used to access the erase functions
+	var drawing = new draw.Draw({ 
+		baseWidth: objRef.baseWidth,
+		baseHeight: objRef.baseHeight,
+		drawHeight: objRef.drawHeight
+	});
+
+	//Picks a file at random from a folder of 'hello's
+	pickFile = function() {
+		do {
+			fileNum = Math.floor(Math.random() * fileArray.length);
+		}
+		while (fileNum == lastNum1 || fileNum == lastNum2); //Generates numbers until a number that has not been used in the past two calls is picked
+		//A language can only be used every third time
+
+		lastNum2 = lastNum1; //Adjusts the last two numbers used
+		lastNum1 = fileNum;
+
+		//Checks to see if the characters should be drawn connected or not
+		//Specified in file name
+		if (fileArray[fileNum].charAt(7) === 'T')
+			connect = true;
+		else
+			connect = false;
+
+		return "./hello/" + fileArray[fileNum];
+	}
+
+	//Says hello.
+	sayHello = function() {
+		var fileChoice = pickFile();
+		drawing.erase(function() {
+			setTimeout(function() { objRef.drawSVG(fileChoice, connect) }, 10000);
+		});
+	}
+
+	sayHello();
+	helloTimer = setInterval(function() { sayHello() }, 60000); //Repeat every minute
+}
+
+//A function to cancel saying hello
+//The robot will finish writing/erasing if it has already started but after that it will stop
+SVGReader.prototype.sayGoodbye = function() {
+	clearInterval(helloTimer);
+	console.log("Goodbye!"); 
+}
+
+//Cycles through all the languages rather than picking one at random
+SVGReader.prototype.helloCycle = function() {
+	timer = 0;
+	var fileArray = fs.readdirSync("./hello");	
+	objRef = this;
+	var fileNum = 0;
+
+	//Used to access the erase functions
+	var drawing = new draw.Draw({ 
+		baseWidth: objRef.baseWidth,
+		baseHeight: objRef.baseHeight,
+		drawHeight: objRef.drawHeight
+	});
+
+	//Function to actually write hello
+	sayHello = function() {
+		var fileChoice = "./hello/" + fileArray[fileNum]; 
+
+		if (fileChoice.charAt(15) === 'T')
+			connect = true;
+		else
+			connect = false;
+
+		drawing.erase(function() { 
+			setTimeout(function() { objRef.drawSVG(fileChoice, connect) }, 10000);
+		});
+
+		fileNum++;
+
+		if (fileNum >= fileArray.length) //Once the end of the list is reached, stop writing
+			clearInterval(helloTimer);
+	}
+
+	sayHello();
+	helloTimer = setInterval(function() { sayHello() }, 60000);
+
 }
 
 
@@ -772,14 +875,6 @@ var halfway;
 var currentPoint;
 var penHeight;
 
-var transformX;
-var transformY;
-var objRef;
-var connected;
-var startTime;
-var endTime;
-var difference;
-var clockTimer;
-var firstMove;
+var transformX, transformY, objRef, connected, startTime, endTime, difference, clockTimer, firstMove, lastNum1, lastNum2, connect, baseWidth, baseHeight;
 
 module.exports.SVGReader = SVGReader;
