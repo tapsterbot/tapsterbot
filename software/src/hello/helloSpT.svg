@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="80mm"
+   height="95mm"
+   viewBox="0 0 283.46457 336.61417"
+   id="svg3474"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="helloSp.svg">
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.6517427"
+     inkscape:cx="141.73228"
+     inkscape:cy="168.30709"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1308"
+     inkscape:window-height="749"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
+     inkscape:window-maximized="1" />
+  <defs
+     id="defs3476" />
+  <metadata
+     id="metadata3479">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-715.74803)"
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <g
+       id="g3509">
+      <path
+         id="path3489"
+         d="M 8.574663,981.81817 18.922372,963.96417 34.443936,934.20751 39.617791,922.30484 44.791645,904.45084 44.791645,892.54818 39.617791,886.59684 29.270081,892.54818 24.096227,904.45084 18.922372,928.25617 13.748518,963.96417 8.574663,1011.5748 M 8.574663,1011.5748 13.748518,993.72084 18.922372,981.81817 29.270081,963.96417 39.617791,958.01284 49.9655,958.01284 55.139354,963.96417 55.139354,975.86684 49.9655,993.72084 49.9655,1005.6235 55.139354,1011.5748 60.313209,1011.5748 70.660918,1005.6235 75.834773,999.67217 86.182482,981.81817"
+         style="fill:none;stroke:#000000;stroke-width:5.54899359"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3491"
+         d="M 117.22561,958.01284 106.8779,958.01284 96.530192,963.96417 91.356337,969.91551 86.182482,981.81817 86.182482,993.72084 91.356337,1005.6235 101.70405,1011.5748 112.05176,1011.5748 122.39946,1005.6235 127.57332,999.67217 132.74717,987.7695 132.74717,975.86684 127.57332,963.96417 117.22561,958.01284 112.05176,963.96417 112.05176,975.86684 117.22561,987.7695 127.57332,993.72084 143.09488,993.72084 153.44259,987.7695 158.61645,981.81817"
+         style="fill:none;stroke:#000000;stroke-width:5.54899359"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3493"
+         d="M 158.61645,981.81817 168.96416,963.96417 184.48572,934.20751 189.65957,922.30484 194.83343,904.45084 194.83343,892.54818 189.65957,886.59684 179.31186,892.54818 174.13801,904.45084 168.96416,928.25617 163.7903,969.91551 163.7903,1005.6235 168.96416,1011.5748 174.13801,1011.5748 184.48572,1005.6235 189.65957,999.67217 200.00728,981.81817"
+         style="fill:none;stroke:#000000;stroke-width:5.54899359"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3495"
+         d="M 246.57197,975.86684 241.39812,963.96417 231.05041,958.01284 220.7027,958.01284 210.35499,963.96417 205.18114,969.91551 200.00728,981.81817 200.00728,993.72084 205.18114,1005.6235 215.52885,1011.5748 225.87656,1011.5748 236.22426,1005.6235 241.39812,993.72084 251.74583,958.01284 246.57197,987.7695 246.57197,1005.6235 251.74583,1011.5748 256.91968,1011.5748 267.26739,1005.6235 272.44125,999.67217 282.78896,981.81817"
+         style="fill:none;stroke:#000000;stroke-width:5.54899359"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>
