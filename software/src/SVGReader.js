@@ -10,9 +10,11 @@ var draw = require("./draw");
 var parseString = require('xml2js').parseString;
 
 function SVGReader(args) {
-	this.baseWidth = 0;
-	this.baseHeight = 0;
-	this.drawHeight = 0;
+	this.baseWidth = 80;
+	this.baseHeight = 95;
+	this.drawHeight = -140;
+	this.delay = 150;
+	this.defaultEaseType = "linear";
 
 	if (args) {
     	var keys = Object.keys(args)
@@ -21,12 +23,8 @@ function SVGReader(args) {
     	}, this)
   	}
 	objRef = this;
+	defaultEaseType = this.defaultEaseType;
 }
-
-//The time, in milliseconds, for each command to execute
-//Note: Some commands, such as Move, can take more than this amount of time to execute
-//To-do: Pull this from a config file?
-var delay = 150;
 
 //Draws from an SVG image specified by filepath
 //> Usage:
@@ -34,7 +32,7 @@ var delay = 150;
 //connect is a special flag that indicates that each path should be drawn connected to each other
 //It is really only used for drawing in cursive and does not need to be specified otherwise
 SVGReader.prototype.drawSVG = function(filePath, connect) {
-	timer = 0;
+	resetTimer();
 	var parsed;
 
 	if (connect)
@@ -67,10 +65,12 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 	width = svgDimensions.width;
 	height = svgDimensions.height; 
 
+	//Check for translation and account for it
+	//Commented out because going to stop supporting transformations
+	/*
 	transformX = 0;
 	transformY = 0;
 
-	//Check for translation and account for it
 	if (objArr.svg.g[0].$ && objArr.svg.g[0].$.transform) { //Done in multiple checks to avoid errors being thrown
 		var transString = objArr.svg.g[0].$.transform;
 		var subX = transString.indexOf("(");
@@ -78,6 +78,7 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 		var subY = transString.indexOf(",");
 		transformY = parseInt(transString.substring(subY + 1));
 	}
+	*/
 
 	var phoneWidth = this.baseWidth;
 	var phoneHeight = this.baseHeight;
@@ -108,8 +109,8 @@ SVGReader.prototype.drawSVG = function(filePath, connect) {
 		drawImage(pathArray);
 	}
 
-	doSetTimeout(0, 49, -130, delay);
-	setTimeout(function() { timer = 0 }, timer + 5);
+	doSetTimeout(0, 48, -130, delay);
+	//setTimeout(function() { resetTimer() }, timer + 5);
 }
 
 drawImage = function(pathArray) {
@@ -131,18 +132,27 @@ drawImage = function(pathArray) {
 
 //Move from one point to (x, y)
 move = function(x, y) {
+	var ptArray = [];
 	if (!connected) { //If the paths should not be connected, lift up the pen and move over so that a line is not drawn
-		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay);
-		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay);
-		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay, "none");
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay, "none");
+		doSetTimeout(mapX(x), mapY(y), penHeight, delay, "none");
+		//svg.drawSVG("C:/Projects/Tapsterbot/software/src/hello/helloChF.svg")
+		//ptArray.push({x:mapX(currentPoint.x), y:mapY(currentPoint.y), z:penHeight + 10});
+		//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight + 10});
+		//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight});	
 	}
 	else if (connected && !firstMove) { //If the paths should be connected and a move has not been made, lift up the pen and move to the first point
-		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay);
-		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay);
-		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
+		doSetTimeout(mapX(currentPoint.x), mapY(currentPoint.y), penHeight + 10, delay, "none");
+		doSetTimeout(mapX(x), mapY(y), penHeight + 10, delay, "none");
+		doSetTimeout(mapX(x), mapY(y), penHeight, delay, "none");
+		//ptArray.push({x:mapX(currentPoint.x), y:mapY(currentPoint.y), z:penHeight + 10});
+		//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight + 10});
+		//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight});	
 	}
 	else //If the paths should be connected and a move has been made, just draw a line between the two paths
 		doSetTimeout(mapX(x), mapY(y), penHeight, delay);
+		//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight});	
 
 	currentPoint = {x:x, y:y}; //Update the current point (done every time an SVG command is called)
 
@@ -151,6 +161,8 @@ move = function(x, y) {
 
 	if (!firstPoint) //Keeps track of the first point, for use with the Z/z command
 		firstPoint = {x:currentPoint.x, y:currentPoint.y}; //Since the first command of a path is always to Move, this check only occurs here
+
+	//return ptArray;
 }
 
 //Move from one point to that that point + x, y
@@ -158,13 +170,17 @@ relMove = function(x, y) {
 	x = currentPoint.x + x;
 	y = currentPoint.y + y;
 
-	move(x, y);	
+	//return move(x, y);	
+	move(x, y);
 }
 
 //Draw a line from one point to (x, y)
 line = function(x, y) {
-	doSetTimeout(mapX(x), mapY(y), penHeight, delay);
+	var ptArray = [];
+	doSetTimeout(mapX(x), mapY(y), penHeight, delay, "linear");
+	//ptArray.push({x:mapX(x), y:mapY(y), z:penHeight});
 	currentPoint = {x:x, y:y};
+
 }
 
 //Draw a line from one point to that point + x, y
@@ -172,6 +188,7 @@ relLine = function(x, y) {
 	x = currentPoint.x + x;
 	y = currentPoint.y + y;
 
+	//return line(x, y);
 	line(x, y);
 }
 
@@ -187,11 +204,11 @@ cubicCurve = function(x1, y1, x2, y2, x, y) {
 		var ptArray = new Array();
 		for (var i = 0; i <= t; i++) {
 			var newI = i/t; //Converts i to a decimal, to satisfy 0 <= i <= 1
-			var ptX = (Math.pow((1-newI), 3) * currentPoint.x) + (3 * Math.pow((1-newI), 2) * newI * x1) //Formula from Wikipedia page for Bezier curves
+			var ptX = (Math.pow((1-newI), 3) * currentPoint.x) + (3 * Math.pow((1-newI), 2) * newI * x1) //From https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B.C3.A9zier_curves
 					  + (3 * (1-newI) * Math.pow(newI, 2) * x2) + (Math.pow(newI, 3) * x);
 			var ptY = (Math.pow((1-newI), 3) * currentPoint.y) + (3 * Math.pow((1-newI), 2) * newI * y1)
 					  + (3 * (1-newI) * Math.pow(newI, 2) * y2) + (Math.pow(newI, 3) * y);
-			var newPt = {x:ptX, y:ptY};
+			var newPt = {x:ptX, y:ptY, z:penHeight};
 			ptArray.push(newPt); //Populates the array with points
 		}
 		currentPoint = {x:ptArray[t].x, y:ptArray[t].y};
@@ -199,9 +216,10 @@ cubicCurve = function(x1, y1, x2, y2, x, y) {
 	}
 	
 	var curvePts = new Array();
-	curvePts = b(x1, y1, x2, y2, x, y, 5); //5 is an arbitrarily-chosen value. It creates a smooth-looking curve without calculating too many points
+	curvePts = b(x1, y1, x2, y2, x, y, 5); //Arbitrarily-chosen value. It creates a smooth-looking curve without calculating too many points
 	for (var i = 0;i < curvePts.length; i++) 
-		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay / curvePts.length);
+		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay*2 / curvePts.length, "none"); //The cubic curve command takes 2*delay ms to complete so that an accurate curve is created
+	//return b(x1, y1, x2, y2, x, y, 8);
 }
 
 //Draws a relative cubic Bezier curve
@@ -209,6 +227,7 @@ relCubicCurve = function(x1, y1, x2, y2, x, y)
 {
 	var tempX = currentPoint.x;
 	var tempY = currentPoint.y;
+	//return cubicCurve(tempX + x1, tempY + y1, tempX + x2, tempY + y2, tempX + x, tempY + y);	
 	cubicCurve(tempX + x1, tempY + y1, tempX + x2, tempY + y2, tempX + x, tempY + y);	
 }
 
@@ -222,9 +241,9 @@ quadraticCurve = function(x1, y1, x, y) {
 		var ptArray = new Array();
 		for (var i = 0; i <= t; i++) {
 			var newI = i/t; //Converts i to a decimal, to satisfy 0 <= i <= 1
-			var ptX = Math.pow((1-newI), 2)*currentPoint.x + (2 * (1-newI) * newI * x1) + (Math.pow(newI, 2) * x); //From Wikipedia page for Bezier curves
+			var ptX = Math.pow((1-newI), 2)*currentPoint.x + (2 * (1-newI) * newI * x1) + (Math.pow(newI, 2) * x); //From https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B.C3.A9zier_curves
 			var ptY = Math.pow((1-newI), 2)*currentPoint.y + (2 * (1-newI) * newI * y1) + (Math.pow(newI, 2) * y);
-			var newPt = {x:ptX, y:ptY};
+			var newPt = {x:ptX, y:ptY, z:penHeight};
 			ptArray.push(newPt);
 		}
 		currentPoint = {x:ptArray[t].x, y:ptArray[t].y};
@@ -234,13 +253,15 @@ quadraticCurve = function(x1, y1, x, y) {
 	var curvePts = new Array();
 	curvePts = q(x1, y1, x, y, 5);
 	for (var i = 0; i < curvePts.length; i++) 
-		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay / curvePts.length);
+		doSetTimeout(mapX(curvePts[i].x), mapY(curvePts[i].y), penHeight, delay*2 / curvePts.length, "none");
+	//return q(x1, y1, x, y, 8);
 }
 
 //Draws a relative quadratic Bezier curve
 relQuadraticCurve = function(x1, y1, x, y) {
 	var tempX = currentPoint.x;
 	var tempY = currentPoint.y;
+	//return quadraticCurve(tempX + x1, tempY + y1, tempX + x, tempY + y);
 	quadraticCurve(tempX + x1, tempY + y1, tempX + x, tempY + y);
 }
 
@@ -260,7 +281,7 @@ arc = function(rx, ry, rotation, largeArc, sweep, x, y) {
 		for (var i = 0; i <= t; i++) {
 			var newI = i / t;
 			var angle = startAngle + sweepAngle * newI;
-			var newPt = {x: cx + rx * cos(angle), y: cy + ry * sin(angle)};
+			var newPt = {x: cx + rx * cos(angle), y: cy + ry * sin(angle), z:penHeight};
 			ptArray.push(newPt);
 		}
 
@@ -335,11 +356,13 @@ arc = function(rx, ry, rotation, largeArc, sweep, x, y) {
 
 	sweepAngle %= 360;
 
-	var ptArray = a(rx, ry, largeArc, sweep, x, y, 7);
+	var ptArray = a(rx, ry, largeArc, sweep, x, y, 5);
 
 	for (var i = 0; i < ptArray.length; i++) {
-		doSetTimeout(mapX(ptArray[i].x), mapY(ptArray[i].y), penHeight, delay / ptArray.length);
+		doSetTimeout(mapX(ptArray[i].x), mapY(ptArray[i].y), penHeight, delay*2 / ptArray.length, "none");
 	}
+
+	//return a(rx, ry, largeArc, sweep, x, y, 10);
 }
 
 //Function for drawing a relative elliptical arc
@@ -347,14 +370,9 @@ relArc = function(rx, ry, rotation, largeArc, sweep, x, y) {
 	x = currentPoint.x + x;
 	y = currentPoint.y + y;
 
+	//return arc(rx, ry, rotation, largeArc, sweep, x, y);
 	arc(rx, ry, rotation, largeArc, sweep, x, y);
 }
-
-//A separate setTimeout method so that delays work properly
-doSetTimeout = function(x, y, z, timeDelay) {
- 	setTimeout(function() { go(x, y, z) }, timer);
- 	timer = timer + timeDelay; 
-};
 
 //A function for setting the penHeight from the command line
 setPenHeight = function(penHeight) {
@@ -378,19 +396,13 @@ reflect = function(x, y, x1, y1) {
 //Convert points pixel coordinates to Tapster coordinates
 //Done in two methods for ease of use
 mapX = function(x) {
-	if (transformX) 
-		var newX = x + transformX;
-	else 
-		var newX = x;
+	var newX = x;
 	newX = (newX - halfway.x) / widthRatio; //The center of the canvas corresponds to (0, 0) on the Tapster
   	return newX;
 };
 
 mapY = function(y) {
-	if (transformY)
-		var newY = y + transformY;
-	else
-		var newY = y;
+	var newY = y;
 	newY = (halfway.y - newY) / heightRatio;
 	return newY;
 }
@@ -406,6 +418,7 @@ cos = function(degree) {
 }
 
 //Function for converting Inkscape dimensions into Tapster-friendly pixels
+//Should switch to switch statements
 dimensionConversion = function(width, height) {
 	width = String(width);
 	if (width.search("mm") != -1) {
@@ -436,10 +449,15 @@ dimensionConversion = function(width, height) {
 }
 
 //Goes through the list of commands an generated by the SVG-Path-Parser and calls the corresponding functions
+//Should switch to switch statements
 SVGReader.prototype.interpretCommands = function(commands) {
+	delay = this.delay;
 	for (var i = 0; i < commands.length; i++) {
 		var cmdCode = commands[i].code;
 		if (cmdCode == 'M') {	
+			//var temp = move(commands[i].x, commands[i].y);
+			//for (var i = 0; i < temp.length; i++) 
+				//doSetTimeout(temp[i].x, temp[i].y, temp[i].z, delay);
 			move(commands[i].x, commands[i].y);
 		}
 
@@ -548,17 +566,51 @@ SVGReader.prototype.interpretCommands = function(commands) {
 	}
 }
 
+SVGReader.prototype.loadFont = function(filePath) {
+	try {
+		parseString(fs.readFileSync(filePath, "utf8"), function(err, result) {
+		parsed = JSON.stringify(result, null, 1);
+		loaded = true;
+	});
+	} catch (e) {
+		if (e.code === "ENOENT")
+			console.log("File not found.");
+		else
+			throw e;
+
+		return; //If the file is not found stop execution
+	}
+
+	//Parse the JSON string into an array
+	fontFile = JSON.parse(parsed);
+
+	//Extract width and height data from the drawing
+	var svgDimensions = dimensionConversion(fontFile.svg.$.width, fontFile.svg.$.height);
+	width = svgDimensions.width;
+	height = svgDimensions.height; 
+
+	fontFile = fontFile.svg.g[0].path;
+	//svg.loadFont("C:/Projects/Tapsterbot/software/src/fontFile.svg")
+}
+
 //Creates a working clock
 //To-do: Add support for user-specified fonts
-SVGReader.prototype.clock = function() {
+SVGReader.prototype.clock = function(filePath) {
 	var dimensions = dimensionConversion("80mm", "95mm"); //Since no dimensions are specified, assume the default
 														  //To-do: Pull this from a config file
 	width = dimensions.width;
 	height = dimensions.height;
 
+	if (filePath)
+		this.loadFont(filePath);
+	else {
+		console.log("Font not specified. Using default font.");
+		loaded = false;
+	}
+
 	objRef = this;
 
-	timer = 0;
+	resetTimer();
 	connected = false;
 
 	//Used to access the erase functions
@@ -578,20 +630,28 @@ SVGReader.prototype.clock = function() {
 	halfway = {x:width / 2, y:height / 2};
 	currentPoint = {x:halfway.x, y:halfway.y}; //Start at the center of the canvas, which corresponds to (0,0) on the Tapster
 
-	//Currently hardcoded path data
-	//To-do: Allow users to specify fonts
-	var zero = "M 40.890286,241.44557 30.687127,245.57254 23.885021,257.95342 20.483968,278.58823 20.483968,290.96912 23.885021,311.60393 30.687127,323.98482 40.890286,328.11178 47.692392,328.11178 57.895551,323.98482 64.697657,311.60393 68.09871,290.96912 68.09871,278.58823 64.697657,257.95342 57.895551,245.57254 47.692392,241.44557 40.890286,241.44557";
-	var one = "M 50.289453,243.07635 50.289453,329.52761";
-	var two = "M 27.618803,262.08031 27.618803,257.95271 30.945521,249.69749 34.27224,245.56989 40.925676,241.44228 54.23255,241.44228 60.885986,245.56989 64.212704,249.69749 67.539423,257.95271 67.539423,266.20792 64.212704,274.46313 57.559268,286.84595 24.292085,328.12202 70.866141,328.12202";
-	var three = "M 27.042715,241.44643 64.666988,241.44643 44.144657,274.4608 54.405822,274.4608 61.2466,278.58759 64.666988,282.71439 68.087377,295.09478 68.087377,303.34837 64.666988,315.72875 57.826211,323.98234 47.565046,328.10914 37.30388,328.10914 27.042715,323.98234 23.622326,319.85555 20.201938,311.60196";
-	var four = "M 54.845427,241.51709 22.803997,300.19076 70.866142,300.19076 M 54.845427,241.51709 54.845427,329.5276";
-	var five = "M 61.700462,246.77512 26.654546,246.77512 23.149954,281.56734 26.654546,277.70154 37.168321,273.83574 47.682096,273.83574 58.19587,277.70154 65.205054,285.43315 68.709645,297.03055 68.709645,304.76216 65.205054,316.35956 58.19587,324.09117 47.682096,327.95697 37.168321,327.95697 26.654546,324.09117 23.149954,320.22537 19.645363,312.49376";
-	var six = "M 64.294901,253.7887 60.65789,245.53396 49.746856,241.40659 42.472833,241.40659 31.561799,245.53396 24.287776,257.91607 20.650765,278.55291 20.650765,299.18976 24.287776,315.69923 31.561799,323.95397 42.472833,328.08134 46.109844,328.08134 57.020878,323.95397 64.294901,315.69923 67.931912,303.31713 67.931912,299.18976 64.294901,286.80765 57.020878,278.55291 46.109844,274.42554 42.472833,274.42554 31.561799,278.55291 24.287776,286.80765 20.650765,299.18976";
-	var seven = "M 68.262659,241.73033 32.158284,328.90301 M 17.716535,241.73033 68.262659,241.73033";
-	var eight = "M 37.489233,241.44557 27.286074,245.57254 23.885021,253.82646 23.885021,262.08039 27.286074,270.33431 34.08818,274.46127 47.692392,278.58823 57.895551,282.7152 64.697657,290.96912 68.09871,299.22304 68.09871,311.60393 64.697657,319.85785 61.296604,323.98482 51.093445,328.11178 37.489233,328.11178 27.286074,323.98482 23.885021,319.85785 20.483968,311.60393 20.483968,299.22304 23.885021,290.96912 30.687127,282.7152 40.890286,278.58823 54.494498,274.46127 61.296604,270.33431 64.697657,262.08039 64.697657,253.82646 61.296604,245.57254 51.093445,241.44557 37.489233,241.44557";
-	var nine = "M 67.931912,270.29818 64.2949,282.68028 57.020878,290.93502 46.109844,295.06239 42.472833,295.06239 31.561799,290.93502 24.287776,282.68028 20.650765,270.29818 20.650765,266.17081 24.287776,253.7887 31.561799,245.53396 42.472833,241.40659 46.109844,241.40659 57.020878,245.53396 64.2949,253.7887 67.931912,270.29818 67.931912,290.93502 64.2949,311.57186 57.020878,323.95397 46.109844,328.08134 38.835821,328.08134 27.924787,323.95397 24.287776,315.69923";
+	if (connected) {
+		for (var i = 0; i < fontFile.length; i++) {
+			pathData[fontFile[i].$.id] == fontFile[i].$.d;
+		}
+	}
 
-	pathData = [zero, one, two, three, four, five, six, seven, eight, nine];
+	else {
+		//Currently hardcoded path data
+		//To-do: Allow users to specify fonts
+		var zero = "M 40.890286,241.44557 30.687127,245.57254 23.885021,257.95342 20.483968,278.58823 20.483968,290.96912 23.885021,311.60393 30.687127,323.98482 40.890286,328.11178 47.692392,328.11178 57.895551,323.98482 64.697657,311.60393 68.09871,290.96912 68.09871,278.58823 64.697657,257.95342 57.895551,245.57254 47.692392,241.44557 40.890286,241.44557";
+		var one = "M 50.289453,243.07635 50.289453,329.52761";
+		var two = "M 27.618803,262.08031 27.618803,257.95271 30.945521,249.69749 34.27224,245.56989 40.925676,241.44228 54.23255,241.44228 60.885986,245.56989 64.212704,249.69749 67.539423,257.95271 67.539423,266.20792 64.212704,274.46313 57.559268,286.84595 24.292085,328.12202 70.866141,328.12202";
+		var three = "M 33.809127,248.8729 C 45.779077,241.87747 46.887418,243.5556 53.186196,243.05913 61.663816,242.39092 65.286579,246.55715 64.812967,252.72615 64.140416,261.48642 55.207358,274.28536 40.185777,283.01419 L 52.623884,281.94331 59.295192,285.47169 62.630846,289.00007 65.9665,299.58523 65.9665,306.64193 62.630846,317.22713 55.959538,324.28383 45.952576,327.81223 35.945614,327.81223 25.938652,324.28383 22.602998,320.75553 19.267344,313.69873";
+		var four = "M 54.845427,241.51709 22.803997,300.19076 70.866142,300.19076 M 54.845427,241.51709 54.845427,329.5276";
+		var five = "M 61.700462,246.77512 26.654546,246.77512 23.149954,281.56734 26.654546,277.70154 37.168321,273.83574 47.682096,273.83574 58.19587,277.70154 65.205054,285.43315 68.709645,297.03055 68.709645,304.76216 65.205054,316.35956 58.19587,324.09117 47.682096,327.95697 37.168321,327.95697 26.654546,324.09117 23.149954,320.22537 19.645363,312.49376";
+		var six = "M 64.294901,253.7887 60.65789,245.53396 49.746856,241.40659 42.472833,241.40659 31.561799,245.53396 24.287776,257.91607 20.650765,278.55291 20.650765,299.18976 24.287776,315.69923 31.561799,323.95397 42.472833,328.08134 46.109844,328.08134 57.020878,323.95397 64.294901,315.69923 67.931912,303.31713 67.931912,299.18976 64.294901,286.80765 57.020878,278.55291 46.109844,274.42554 42.472833,274.42554 31.561799,278.55291 24.287776,286.80765 20.650765,299.18976";
+		var seven = "M 68.262659,241.73033 32.158284,328.90301 M 17.716535,241.73033 68.262659,241.73033";
+		var eight = "M 37.489233,241.44557 27.286074,245.57254 23.885021,253.82646 23.885021,262.08039 27.286074,270.33431 34.08818,274.46127 47.692392,278.58823 57.895551,282.7152 64.697657,290.96912 68.09871,299.22304 68.09871,311.60393 64.697657,319.85785 61.296604,323.98482 51.093445,328.11178 37.489233,328.11178 27.286074,323.98482 23.885021,319.85785 20.483968,311.60393 20.483968,299.22304 23.885021,290.96912 30.687127,282.7152 40.890286,278.58823 54.494498,274.46127 61.296604,270.33431 64.697657,262.08039 64.697657,253.82646 61.296604,245.57254 51.093445,241.44557 37.489233,241.44557";
+		var nine = "M 67.931912,270.29818 64.2949,282.68028 57.020878,290.93502 46.109844,295.06239 42.472833,295.06239 31.561799,290.93502 24.287776,282.68028 20.650765,270.29818 20.650765,266.17081 24.287776,253.7887 31.561799,245.53396 42.472833,241.40659 46.109844,241.40659 57.020878,245.53396 64.2949,253.7887 67.931912,270.29818 67.931912,290.93502 64.2949,311.57186 57.020878,323.95397 46.109844,328.08134 38.835821,328.08134 27.924787,323.95397 24.287776,315.69923";
+
+		pathData = [zero, one, two, three, four, five, six, seven, eight, nine];
+	}
 
 	var colon = "M 165.73227,300.21546 Z M 165.73227,253.34648 Z";
 	var arrayTime = new Array();
@@ -700,7 +760,7 @@ SVGReader.prototype.clock = function() {
 
 	//Draws a circle to indicate the amount of time left in the minute
 	timeCircle = function() {
-		timer = 0;
+		resetTimer();
 
 		//Draws a circle, given an array of points and the amount of delay in between each point
 	  	circle = function(array, timeDelay) { 
@@ -712,7 +772,7 @@ SVGReader.prototype.clock = function() {
 
 	  	//Calculates the amount of time left in the minute, based on the difference between the time the erase function was called and the time the drawTime function ended
 	  	calcTimeLeft = function() {
-	  		difference += 500; //Add half a second of padding just to be safe
+	  		difference += 1000; //Add some padding just to be safe
 	  		return 60000 - difference; //Everything is in milliseconds to keep calculations simple
 	  	}
 
@@ -722,7 +782,7 @@ SVGReader.prototype.clock = function() {
 	  		return msPerPt;
 	  	}
 
-	  	var radius = 54;
+	  	var radius = 53.5;
 	  	var centerX = 0;
 	  	var centerY = -5;
 	  	var points = new Array();
@@ -741,7 +801,7 @@ SVGReader.prototype.clock = function() {
 
 	//Tells the time
 	tellTime = function() {
-		timer = 0;
+		resetTimer();
 
 		startTime = new Date().getTime();
 
@@ -749,7 +809,9 @@ SVGReader.prototype.clock = function() {
 			drawTime(convertToPath(getTheTime()), function() {
 				timeCircle();
 			});
-		});
+		}); 
+
+		//drawTime(convertToPath([0, 2, 4, 2]), console.log);
 		//setTimeout(function() { drawTime(convertToPath(getTheTime())) }, 12500);
 		//setTimeout(function() { drawTime(convertToPath([0, 8, 5, 8]))}, 12500);
 		//setTimeout(function() { timeCircle() }, 12501);
@@ -768,7 +830,7 @@ SVGReader.prototype.clearClock = function() {
 
 //Says 'hello' in multiple languages
 SVGReader.prototype.hello = function() {
-	timer = 0;
+	resetTimer();
 	var fileArray = fs.readdirSync("./hello");
 	var fileNum;
 	objRef = this;
@@ -803,6 +865,7 @@ SVGReader.prototype.hello = function() {
 
 	//Says hello.
 	sayHello = function() {
+		resetTimer();
 		var fileChoice = pickFile();
 		drawing.erase(function() {
 			setTimeout(function() { objRef.drawSVG(fileChoice, connect) }, 10000);
@@ -822,7 +885,7 @@ SVGReader.prototype.sayGoodbye = function() {
 
 //Cycles through all the languages rather than picking one at random
 SVGReader.prototype.helloCycle = function() {
-	timer = 0;
+	resetTimer();
 	var fileArray = fs.readdirSync("./hello");	
 	objRef = this;
 	var fileNum = 0;
@@ -843,9 +906,9 @@ SVGReader.prototype.helloCycle = function() {
 		else
 			connect = false;
 
-		drawing.erase(function() { 
-			setTimeout(function() { objRef.drawSVG(fileChoice, connect) }, 10000);
-		});
+		//drawing.erase(function() { 
+		//	setTimeout(function() { objRef.drawSVG(fileChoice, connect) }, 10000);
+		//});
 
 		fileNum++;
 
@@ -858,11 +921,6 @@ SVGReader.prototype.helloCycle = function() {
 
 }
 
-
-
-//Timer variable for use with the doSetTimeout method
-var timer = 0;
-
 //Saves the coordinates of the first point drawn
 var firstPoint;
 
@@ -874,7 +932,7 @@ var heightRatio;
 var halfway;
 var currentPoint;
 var penHeight;
-
-var transformX, transformY, objRef, connected, startTime, endTime, difference, clockTimer, firstMove, lastNum1, lastNum2, connect, baseWidth, baseHeight;
+var delay, loaded, fontFile;
+var transformX, transformY, objRef, connected, startTime, endTime, difference, clockTimer, firstMove, lastNum1, lastNum2, connect, baseWidth, baseHeight, defaultEaseType;
 
 module.exports.SVGReader = SVGReader;

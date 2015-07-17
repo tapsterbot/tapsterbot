@@ -30,7 +30,7 @@ function Kinematics(args) {
 }
 
 // Forward kinematics: (theta1, theta2, theta3) -> (x0, y0, z0)
-//   Returned {error code,theta1,theta2,theta3}
+// Returned {error code,theta1,theta2,theta3}
 Kinematics.prototype.forward = function(theta1, theta2, theta3) {
   var x0 = 0.0;
   var y0 = 0.0;

@@ -7,12 +7,14 @@
 //> draw.erase()
 
 var fs = require('fs');
-var objRef;
+var objRef, defaultEaseType;
 var calculated, spiralPts;
 
 function Draw(args) {
-  this.baseWidth = 0;
-  this.baseHeight = 0;
+  this.baseWidth = 80;
+  this.baseHeight = 95;
+  this.drawHeight = -140;
+  this.defaultEaseType = "linear";
 
   if (args) {
     var keys = Object.keys(args);
@@ -21,6 +23,7 @@ function Draw(args) {
     }, this)
   }
   penHeight = this.drawHeight;
+  defaultEaseType = this.defaultEaseType;
   objRef = this;
 }
 
@@ -38,28 +41,31 @@ mapPoints = function(x, y) {
 
 //Adds delays while the Tapster is writing
 //The specific delay can be changed if the bot has to go slower or faster for a particular segment
-doSetTimeout = function(x, y, z, delay) {
-  setTimeout(function() { go(x, y, z) }, timer);
+/*doSetTimeout = function(x, y, z, delay, easing) {
+  if (!easing)
+    easing = defaultEaseType;
+  setTimeout(function() { go([x, y, z], easing) }, timer);
   currentPoint = {x: x, y: y, z: z};
   timer = timer + delay; 
-};
+}; */
 
 //A go method that iterates over points rather than jumping from a to b
 //Assumes that z stays the same
 //Draws points + 1 points
 //Delay is the total amount of time that it takes
 //Each point takes delay / points time to draw
-Draw.prototype.itGo = function(x, y, z, points, delay) {
-  var x1 = currentPoint.x;
-  var y1 = currentPoint.y;
-  var deltaX = x - x1;
-  var deltaY = y - y1;
-  var slope = ((y - y1) / (x - x1));
+Draw.prototype.itGo = function(x, y, x1, y1, points, delay) {
+  //var x1 = currentPoint.x;
+  //var y1 = currentPoint.y;
+  var z = penHeight;
+  var deltaX = x1 - x;
+  var deltaY = y1 - y;
+  var slope = ((y1 - y) / (x1 - x));
   var pointArray = new Array();
 
   for (var i = 0; i <= points; i++) {
-    var newX = x1 + deltaX / points * i; 
-    var newY = y1 + deltaY / points * i;
+    var newX = x + deltaX / points * i; 
+    var newY = y + deltaY / points * i;
     var point = {x: newX, y: newY};
     pointArray.push(point);
   }
@@ -75,9 +81,6 @@ var baseHeight, baseWidth, canvasHeight, canvasWidth, heightRatio, widthRatio, h
 var currentPoint = {x: 0, y: 0, z: -140};
 var penHeight = this.drawHeight;
 
-//A timer variable for use with doSetTimeout()
-var timer = 0;
-
 //Set the penHeight from the command line
 Draw.prototype.setPenHeight = function(height) {
   penHeight = height;
@@ -85,6 +88,7 @@ Draw.prototype.setPenHeight = function(height) {
 }
 
 //Draws an image from a JSON file of coordinates
+//The SVGReader drawSVG method is preferred
 Draw.prototype.drawFromCoordinates = function() {
 
   baseHeight = this.baseHeight;
@@ -136,7 +140,10 @@ Draw.prototype.drawFromCoordinates = function() {
 //Draws every nth point
 Draw.prototype.drawSquare = function(sideLength, n) {
 
-  timer = 0; //Reset the timer so that there isn't unnecessary delay when calling the function multiple times
+  resetTimer(); //Reset the timer so that there isn't unnecessary delay when calling the function multiple times
+
+  if (!n)
+    var n = 2;
 
   var halfSide = sideLength / 2;
   var points = sideLength / n;
@@ -165,18 +172,21 @@ Draw.prototype.drawSquare = function(sideLength, n) {
 };
 
 //Draws a star to test that the Tapster bot is working properly
-Draw.prototype.drawStar = function(x, y, x1, y1, x2, y2) {
-  doSetTimeout(x, y, penHeight, 1000);
-  doSetTimeout(x1, y1, penHeight, 1000);
-  doSetTimeout(x2, y2, penHeight, 1000);
-  doSetTimeout(x, y1 * 3 / 4, penHeight, 1000);
-  doSetTimeout(x2, y1 * 3 / 4, penHeight, 1000);
-  doSetTimeout(x, y, penHeight, 1000);
+Draw.prototype.drawStar = function() {
+  resetTimer();
+  doSetTimeout(-20, -20, penHeight, 1000);
+  doSetTimeout(0, 30, penHeight, 1000);
+  doSetTimeout(20, -20, penHeight, 1000);
+  doSetTimeout(-30, 10, penHeight, 1000);
+  doSetTimeout(30, 10, penHeight, 1000);
+  doSetTimeout(-20, -20, penHeight, 1000);
+
+  //-20, -20, 0, 30, 20, -20
 };
 
 
 Draw.prototype.drawTriangle = function(x, y, x1, y1, x2, y2) {
-  timer = 0;
+  resetTimer();
   doSetTimeout(x, y, penHeight, 1000);
   doSetTimeout(x1, y1, penHeight, 1000);
   doSetTimeout(x2, y2, penHeight, 1000);
@@ -184,30 +194,39 @@ Draw.prototype.drawTriangle = function(x, y, x1, y1, x2, y2) {
 }
 
 Draw.prototype.drawCircle = function(radius, x, y) {
-  timer = 0;
-  var centerX=x;
-  var centerY=y;
+  //40
+  resetTimer();
+  if (x && y) {
+    var centerX = x;
+    var centerY = y;
+  }
+
+  else {
+    var centerX = 0;
+    var centerY = 0;
+  }
+
   var radius=radius;
 
   // an array to save your points
   var points=[];
-   
+
   // populate array with points along a circle
   //Goes slightly over so that the circle is actually completed
-  for (var degree=0; degree < 365; degree++) {
+  for (var degree=0; degree < 395; degree++) {
       var radians = (degree + 90) * Math.PI/180;
       var x = centerX + radius * Math.cos(radians);
       var y = centerY + radius * Math.sin(radians);
       points.push({x:x,y:y});
   }
-
-  doSetTimeout(points[0].x, points[0].y, penHeight + 10, 20);
-  doSetTimeout(points[0].x, points[0].y, penHeight, 20);
    
   circle = function() {
+    doSetTimeout(0, 0, -120, 50, "none");
+    doSetTimeout(points[0].x, points[0].y, penHeight + 10, 150, "none");
+    doSetTimeout(points[0].x, points[0].y, penHeight, 150, "none");
     for (var i=0; i<points.length; i+=1) {
       point = points[i];
-      doSetTimeout(point.x, point.y, penHeight, 2);
+      doSetTimeout(point.x, point.y, penHeight, 2, "none");
     }
   }
    
@@ -219,7 +238,8 @@ Draw.prototype.drawCircle = function(radius, x, y) {
 //Radius is the diameter(?) of the largest spiral
 //zLevel is optional -- it is the penHeight to draw the spiral at (mainly used for the erase function)
 Draw.prototype.drawSpiral = function(spirals, radius, zLevel, ptArray) {
-  timer = 0;
+
+  resetTimer();
   var centerX = 0;
   var centerY = 0;
   var x1 = 0;
@@ -228,8 +248,6 @@ Draw.prototype.drawSpiral = function(spirals, radius, zLevel, ptArray) {
 
   if (zLevel) //If a zLevel is specified set the penHeight at that level
     penHeight = zLevel;
-
-  //go(centerX, centerY, penHeight);
 
   if (ptArray) {
     points = ptArray;
@@ -246,43 +264,57 @@ Draw.prototype.drawSpiral = function(spirals, radius, zLevel, ptArray) {
       var y = centerY + y1 * Math.sin(radians);
       points.push({x:x, y:y});
     }
+    //doSetTimeout(points[0].x, points[0].y, penHeight + 10, 150);
+    //doSetTimeout(points[0].x, points[0].y, penHeight, 150, "none");
   }
 
   spiral = function() {
     for (var z = 0; z < points.length; z++) {
       point = points[z];
-      doSetTimeout(point.x, point.y, penHeight, 5);
+      doSetTimeout(point.x, point.y, penHeight, 5, "none");
     }
   }
+
   spiral();
   return points;
 }; 
 
 Draw.prototype.test = function() {
   var objRef = this;
-  setTimeout(function() { go(35, 24, penHeight + 20) }, 500);
   setTimeout(function() { objRef.drawCircle(15, 20, 23.75) }, 1000);
-  setTimeout(function() { go(-30, 10, penHeight + 20) }, 6500);
-  setTimeout(function() { objRef.drawStar(-30, 10, -20, 30, -10, 10) }, 7000);
-  setTimeout(function() { go(-10, -10, penHeight + 20) }, 14000);
-  setTimeout(function() { square(-10, -10, -30, -10, -30, -30, -10, -30) }, 16000);
-  setTimeout(function() { go(10, -30, penHeight + 20) }, 21000);
-  setTimeout(function() { objRef.drawTriangle(10, -30, 20, -10, 30, -30) }, 22000);
+  setTimeout(function() { go([-30, 10, penHeight + 20]) }, 6500);
+  setTimeout(function() { star(-30, 10, -20, 30, -15, 10, 5) }, 7000);
+  setTimeout(function() { go([-10, -10, penHeight + 20]) }, 16000);
+  setTimeout(function() { square(-10, -10, -30, -10, -30, -30, -10, -30) }, 18000);
+  setTimeout(function() { go([10, -30, penHeight + 20]) }, 25000);
+  setTimeout(function() { objRef.drawTriangle(10, -30, 20, -10, 30, -30) }, 27000);
+  setTimeout(function() { go([0, 0, -140]) }, 31000);
 
   square = function(x, y, x1, y1, x2, y2, x3, y3) {
+    resetTimer();
     doSetTimeout(x, y, penHeight, 1000);
     doSetTimeout(x1, y1, penHeight, 1000);
     doSetTimeout(x2, y2, penHeight, 1000);
     doSetTimeout(x3, y3, penHeight, 1000);
     doSetTimeout(x, y, penHeight, 1000);
   }
+
+  star = function(x, y, x1, y1, x2, y2, diff) {
+    resetTimer();
+    doSetTimeout(x, y, penHeight, 1000);
+    doSetTimeout(x1, y1, penHeight, 1000);
+    doSetTimeout(x2, y2, penHeight, 1000);
+    doSetTimeout(x - diff, y1 * 3 / 4, penHeight, 1000);
+    doSetTimeout(x2 + diff, y1 * 3 / 4, penHeight, 1000);
+    doSetTimeout(x, y, penHeight, 1000);
+  };
 }
 
 Draw.prototype.pickUpEraser = function() {
   eraseHeight = this.drawHeight + 5.25;
   //doSetTimeout(currentPoint.x, currentPoint.y, -130, 500);
-  doSetTimeout(0, 49, -140, 500);
-  doSetTimeout(0, 49, eraseHeight, 500);
+  doSetTimeout(0, 48, -140, 500);
+  doSetTimeout(0, 48, eraseHeight, 500, "none");
   doSetTimeout(0, 0, eraseHeight, 500);
 }
 
@@ -301,7 +333,7 @@ Draw.prototype.eraseBoard = function() {
 Draw.prototype.dropOffEraser = function() {
   eraseHeight = this.drawHeight + 5.25;
   doSetTimeout(0, 50, eraseHeight, 500);
-  doSetTimeout(-4, 50, -130, 500);
+  doSetTimeout(-4, 50, -130, 500, "none");
   doSetTimeout(0, 0, -130, 500);
 }
 
