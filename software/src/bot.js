@@ -3,6 +3,7 @@ kinematics = require("./kinematics");
 svgRead = require("./SVGReader");
 drawing = require("./draw");
 motion = require("./motion");
+ab = require("./demo/angry-birds/angrybirds")
 
 //If a filepath is specified, load that config
 //Otherwise, resort to the default config
@@ -62,6 +63,10 @@ draw = new drawing.Draw({
   baseHeight: config.baseHeight,
   drawHeight: config.drawHeight,
   defaultEaseType: config.defaultEaseType
+});
+
+birds = new ab.AngryBirds({
+  drawHeight: config.drawHeight
 });
 
 board = new five.Board({
@@ -134,9 +139,9 @@ board.on("ready", function() {
     var max = 15;
     var min = 5;
     var range = max - min;
-    servo1.to(30);
-    servo2.to(30);
-    servo3.to(30);
+    servo1.to(15);
+    servo2.to(15);
+    servo3.to(15);
 
     /*
     var dance = function() {
@@ -208,7 +213,8 @@ moveServosTo = function(x, y, z) {
   console.log(angles);
 }
 
-go = function(pointB, easeType) {
+go = function(x, y, z, easeType) {
+  var pointB = [x, y, z];
   if (easeType == "none") {
     moveServosTo(pointB[0], pointB[1], pointB[2]);
     return; //Ensures that it doesn't move twice
