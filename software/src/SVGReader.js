@@ -29,6 +29,7 @@ function SVGReader(args) {
 //Draws from an SVG image specified by filepath
 //> Usage:
 //> drawSVG("C:/Projects/Tapsterbot/software/src/drawing.svg");
+//Note: filePath can be relative
 //connect is a special flag that indicates that each path should be drawn connected to each other
 //It is really only used for drawing in cursive and does not need to be specified otherwise
 SVGReader.prototype.drawSVG = function(filePath, connect) {
