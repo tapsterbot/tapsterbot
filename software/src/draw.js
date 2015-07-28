@@ -222,7 +222,7 @@ Draw.prototype.drawCircle = function(args) {
 //radius: radius of largest spiral (default: 30)
 //zLevel: height at which to draw the spiral (default: penHeight)
 //ptArray: an array of points to draw instead of calculating the spiral again (default: null)
-Draw.prototype.drawSpiral = function(args) { //spirals, radius, zLevel, ptArray) {
+Draw.prototype.drawSpiral = function(args) {
 
   this.startX = 0;
   this.startY = 0;
