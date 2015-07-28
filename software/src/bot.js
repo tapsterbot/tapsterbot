@@ -3,7 +3,6 @@ kinematics = require("./kinematics");
 svgRead = require("./SVGReader");
 drawing = require("./draw");
 motion = require("./motion");
-ab = require("./demo/angry-birds/angrybirds")
 
 //If a filepath is specified, load that config
 //Otherwise, resort to the default config
@@ -63,10 +62,6 @@ draw = new drawing.Draw({
   baseHeight: config.baseHeight,
   drawHeight: config.drawHeight,
   defaultEaseType: config.defaultEaseType
-});
-
-birds = new ab.AngryBirds({
-  drawHeight: config.drawHeight
 });
 
 board = new five.Board({
@@ -243,7 +238,7 @@ doSetTimeout = function(x, y, z, timeDelay, easing) {
   if (!easing)
     easing = defaultEaseType;
 
-  setTimeout(function() { go([x, y, z], easing) }, timer);
+  setTimeout(function() { go(x, y, z, easing) }, timer);
   timer = timer + timeDelay; 
 };
 
