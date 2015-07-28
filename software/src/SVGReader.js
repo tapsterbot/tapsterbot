@@ -455,159 +455,130 @@ SVGReader.prototype.interpretCommands = function(commands) {
 	delay = this.delay;
 	for (var i = 0; i < commands.length; i++) {
 		var cmdCode = commands[i].code;
-		if (cmdCode == 'M') {	
-			//var temp = move(commands[i].x, commands[i].y);
-			//for (var i = 0; i < temp.length; i++) 
-				//doSetTimeout(temp[i].x, temp[i].y, temp[i].z, delay);
-			move(commands[i].x, commands[i].y);
-		}
+				switch (cmdCode) {
+			case 'M':	
+				move(commands[i].x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'm') {
-			relMove(commands[i].x, commands[i].y);
-		}
+			case 'm':
+				relMove(commands[i].x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'L') {
-			line(commands[i].x, commands[i].y);
-		}
+			case 'L': 
+				line(commands[i].x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'l') {
-			relLine(commands[i].x, commands[i].y);
-		}
+			case 'l':
+				relLine(commands[i].x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'V') {
-			line(currentPoint.x, commands[i].y);
-		}
+			case 'V':
+				line(currentPoint.x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'v') {
-			relLine(currentPoint.x, commands[i].y);
-		}
+			case 'v':
+				relLine(currentPoint.x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'H') {
-			line(commands[i].x, currentPoint.y);
-		}
+			case 'H':
+				line(commands[i].x, currentPoint.y);
+				break;
 
-		else if (cmdCode == 'h') {
-			relLine(commands[i].x, currentPoint.y);
-		}
+			case 'h':
+				relLine(commands[i].x, currentPoint.y);
+				break;
 
-		else if (cmdCode == 'C') {
-			cubicCurve(commands[i].x1, commands[i].y1, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
-		}
+			case 'C':
+				cubicCurve(commands[i].x1, commands[i].y1, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
+				break;
 
-		else if (cmdCode == 'c') {
-			relCubicCurve(commands[i].x1, commands[i].y1, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
-		}
+			case 'c':
+				relCubicCurve(commands[i].x1, commands[i].y1, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
+				break;
 
-		//Smooth cubic curve
-		else if (cmdCode == 'S') {
-			if (i > 1 && (commands[i-1].code == 's' || commands[i-1].code == 'c' || commands[i-1].code == 'C' || commands[i-1].code == 'S')) {
-				var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
-				var ctrl = {x:reflected.x, y:reflected.y};
+			//Smooth cubic curve
+			case 'S':
+				if (i > 1 && (commands[i-1].code == 's' || commands[i-1].code == 'c' || commands[i-1].code == 'C' || commands[i-1].code == 'S')) {
+					var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
+					var ctrl = {x:reflected.x, y:reflected.y};
+				}
+				else
+					var ctrl = {x:currentPoint.x, y:currentPoint.y};
+
+				cubicCurve(ctrl.x, ctrl.y, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
+				break;
+
+			//Smooth relative cubic curve
+			case 's':
+				if (i > 1 && (commands[i-1].code == 's' || commands[i-1].code == 'c' || commands[i-1].code == 'C' || commands[i-1].code == 'S')) {
+					var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
+					var ctrl = {x:reflect(commands[i-1].x2).x, y:reflect(commands[i-1].y2).y};
+				}
+				else
+					var ctrl = {x:currentPoint.x, y:currentPoint.y};
+
+				relCubicCurve(ctrl.x, ctrl.y, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
+				break;
+
+			case 'Q':
+				quadraticCurve(commands[i].x1, commands[i].y1, commands[i].x, commands[i].y);
+				break;
+
+			case 'q':
+				relQuadraticCurve(commands[i].x1, commands[i].y1, commands[i].x, commands[i].y);
+				break;
+
+			//Smooth quadratic curve
+			case 'T':
+				if (i > 1 && (commands[i-1].code == 't' || commands[i-1].code == 'q' || commands[i-1].code == 'Q' || commands[i-1].code == 'T')) {
+					var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
+					var ctrl = {x:reflect(commands[i-1].x1).x, y:reflect(commands[i-1].y1).y};
+				}
+				else
+					var ctrl = {x:currentPoint.x, y:currentPoint.y};
+
+				quadraticCurve(ctrl.x, ctrl.y, commands[i].x, commands[i].y);
+				break;
+
+			//Smooth relative quadratic curve
+			case 't':
+				if (i > 1 && (commands[i-1].code == 't' || commands[i-1].code == 'q' || commands[i-1].code == 'Q' || commands[i-1].code == 'T')) {
+					var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
+					var ctrl = {x:reflect(commands[i-1].x1).x, y:reflect(commands[i-1].y1).y};
+				}
+				else
+					var ctrl = {x:currentPoint.x, y:currentPoint.y};
+
+				relQuadraticCurve(ctrl.x, ctrl.y, commands[i].x, commands[i].y);
+				break;
+
+			case 'A':
+				arc(commands[i].rx, commands[i].ry, commands[i].xAxisRotation, commands[i].largeArc, commands[i].sweep, commands[i].x, commands[i].y);
+				break;
+
+			case 'a':
+				relArc(commands[i].rx, commands[i].ry, commands[i].xAxisRotation, commands[i].largeArc, commands[i].sweep, commands[i].x, commands[i].y);
+				break;
+
+			case 'Z': 
+				line(firstPoint.x, firstPoint.y);
+				firstPoint = null;
+				break;
+			
+			case 'z':
+				line(firstPoint.x, firstPoint.y);
+				firstPoint = null;
+				break;
 			}
-			else
-				var ctrl = {x:currentPoint.x, y:currentPoint.y};
-
-			cubicCurve(ctrl.x, ctrl.y, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
-		}
-
-		//Smooth relative cubic curve
-		else if (cmdCode == 's') {
-			if (i > 1 && (commands[i-1].code == 's' || commands[i-1].code == 'c' || commands[i-1].code == 'C' || commands[i-1].code == 'S')) {
-				var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
-				var ctrl = {x:reflect(commands[i-1].x2).x, y:reflect(commands[i-1].y2).y};
-			}
-			else
-				var ctrl = {x:currentPoint.x, y:currentPoint.y};
-
-			relCubicCurve(ctrl.x, ctrl.y, commands[i].x2, commands[i].y2, commands[i].x, commands[i].y);
-		}
-
-		else if (cmdCode == 'Q') {
-			quadraticCurve(commands[i].x1, commands[i].y1, commands[i].x, commands[i].y);
-		}
-
-		else if (cmdCode == 'q') {
-			relQuadraticCurve(commands[i].x1, commands[i].y1, commands[i].x, commands[i].y);
-		}
-
-		//Smooth quadratic curve
-		else if (cmdCode == 'T') {
-			if (i > 1 && (commands[i-1].code == 't' || commands[i-1].code == 'q' || commands[i-1].code == 'Q' || commands[i-1].code == 'T')) {
-				var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
-				var ctrl = {x:reflect(commands[i-1].x1).x, y:reflect(commands[i-1].y1).y};
-			}
-			else
-				var ctrl = {x:currentPoint.x, y:currentPoint.y};
-
-			quadraticCurve(ctrl.x, ctrl.y, commands[i].x, commands[i].y);
-		}
-
-		//Smooth relative quadratic curve
-		else if (cmdCode == 't') {
-			if (i > 1 && (commands[i-1].code == 't' || commands[i-1].code == 'q' || commands[i-1].code == 'Q' || commands[i-1].code == 'T')) {
-				var reflected = reflect(commands[i].x, commands[i].y, commands[i-1].x, commands[i-1].y);
-				var ctrl = {x:reflect(commands[i-1].x1).x, y:reflect(commands[i-1].y1).y};
-			}
-			else
-				var ctrl = {x:currentPoint.x, y:currentPoint.y};
-
-			relQuadraticCurve(ctrl.x, ctrl.y, commands[i].x, commands[i].y);
-		}
-
-		else if (cmdCode == 'A')
-			arc(commands[i].rx, commands[i].ry, commands[i].xAxisRotation, commands[i].largeArc, commands[i].sweep, commands[i].x, commands[i].y);
-
-		else if (cmdCode == 'a')
-			relArc(commands[i].rx, commands[i].ry, commands[i].xAxisRotation, commands[i].largeArc, commands[i].sweep, commands[i].x, commands[i].y);
-		
-		else if (cmdCode == 'Z' || cmdCode == 'z') {
-			line(firstPoint.x, firstPoint.y);
-			firstPoint = null;
 		}
 	}
-}
-
-SVGReader.prototype.loadFont = function(filePath) {
-	try {
-		parseString(fs.readFileSync(filePath, "utf8"), function(err, result) {
-		parsed = JSON.stringify(result, null, 1);
-		loaded = true;
-	});
-	} catch (e) {
-		if (e.code === "ENOENT")
-			console.log("File not found.");
-		else
-			throw e;
-
-		return; //If the file is not found stop execution
-	}
-
-	//Parse the JSON string into an array
-	fontFile = JSON.parse(parsed);
-
-	//Extract width and height data from the drawing
-	var svgDimensions = dimensionConversion(fontFile.svg.$.width, fontFile.svg.$.height);
-	width = svgDimensions.width;
-	height = svgDimensions.height; 
-
-	fontFile = fontFile.svg.g[0].path;
-	//svg.loadFont("C:/Projects/Tapsterbot/software/src/fontFile.svg")
-}
 
 //Creates a working clock
-//To-do: Add support for user-specified fonts
-SVGReader.prototype.clock = function(filePath) {
+SVGReader.prototype.clock = function() {
 	var dimensions = dimensionConversion("80mm", "95mm"); //Since no dimensions are specified, assume the default
 														  //To-do: Pull this from a config file
 	width = dimensions.width;
 	height = dimensions.height;
-
-	if (filePath)
-		this.loadFont(filePath);
-	else {
-		console.log("Font not specified. Using default font.");
-		loaded = false;
-	}
 
 	objRef = this;
 
@@ -631,28 +602,19 @@ SVGReader.prototype.clock = function(filePath) {
 	halfway = {x:width / 2, y:height / 2};
 	currentPoint = {x:halfway.x, y:halfway.y}; //Start at the center of the canvas, which corresponds to (0,0) on the Tapster
 
-	if (connected) {
-		for (var i = 0; i < fontFile.length; i++) {
-			pathData[fontFile[i].$.id] == fontFile[i].$.d;
-		}
-	}
+	//Currently hardcoded path data
+	var zero = "M 40.890286,241.44557 30.687127,245.57254 23.885021,257.95342 20.483968,278.58823 20.483968,290.96912 23.885021,311.60393 30.687127,323.98482 40.890286,328.11178 47.692392,328.11178 57.895551,323.98482 64.697657,311.60393 68.09871,290.96912 68.09871,278.58823 64.697657,257.95342 57.895551,245.57254 47.692392,241.44557 40.890286,241.44557";
+	var one = "M 50.289453,243.07635 50.289453,329.52761";
+	var two = "M 27.618803,262.08031 27.618803,257.95271 30.945521,249.69749 34.27224,245.56989 40.925676,241.44228 54.23255,241.44228 60.885986,245.56989 64.212704,249.69749 67.539423,257.95271 67.539423,266.20792 64.212704,274.46313 57.559268,286.84595 24.292085,328.12202 70.866141,328.12202";
+	var three = "M 33.809127,248.8729 C 45.779077,241.87747 46.887418,243.5556 53.186196,243.05913 61.663816,242.39092 65.286579,246.55715 64.812967,252.72615 64.140416,261.48642 55.207358,274.28536 40.185777,283.01419 L 52.623884,281.94331 59.295192,285.47169 62.630846,289.00007 65.9665,299.58523 65.9665,306.64193 62.630846,317.22713 55.959538,324.28383 45.952576,327.81223 35.945614,327.81223 25.938652,324.28383 22.602998,320.75553 19.267344,313.69873";
+	var four = "M 54.845427,241.51709 22.803997,300.19076 70.866142,300.19076 M 54.845427,241.51709 54.845427,329.5276";
+	var five = "M 61.700462,246.77512 26.654546,246.77512 23.149954,281.56734 26.654546,277.70154 37.168321,273.83574 47.682096,273.83574 58.19587,277.70154 65.205054,285.43315 68.709645,297.03055 68.709645,304.76216 65.205054,316.35956 58.19587,324.09117 47.682096,327.95697 37.168321,327.95697 26.654546,324.09117 23.149954,320.22537 19.645363,312.49376";
+	var six = "M 64.294901,253.7887 60.65789,245.53396 49.746856,241.40659 42.472833,241.40659 31.561799,245.53396 24.287776,257.91607 20.650765,278.55291 20.650765,299.18976 24.287776,315.69923 31.561799,323.95397 42.472833,328.08134 46.109844,328.08134 57.020878,323.95397 64.294901,315.69923 67.931912,303.31713 67.931912,299.18976 64.294901,286.80765 57.020878,278.55291 46.109844,274.42554 42.472833,274.42554 31.561799,278.55291 24.287776,286.80765 20.650765,299.18976";
+	var seven = "M 68.262659,241.73033 32.158284,328.90301 M 17.716535,241.73033 68.262659,241.73033";
+	var eight = "M 37.489233,241.44557 27.286074,245.57254 23.885021,253.82646 23.885021,262.08039 27.286074,270.33431 34.08818,274.46127 47.692392,278.58823 57.895551,282.7152 64.697657,290.96912 68.09871,299.22304 68.09871,311.60393 64.697657,319.85785 61.296604,323.98482 51.093445,328.11178 37.489233,328.11178 27.286074,323.98482 23.885021,319.85785 20.483968,311.60393 20.483968,299.22304 23.885021,290.96912 30.687127,282.7152 40.890286,278.58823 54.494498,274.46127 61.296604,270.33431 64.697657,262.08039 64.697657,253.82646 61.296604,245.57254 51.093445,241.44557 37.489233,241.44557";
+	var nine = "M 67.931912,270.29818 64.2949,282.68028 57.020878,290.93502 46.109844,295.06239 42.472833,295.06239 31.561799,290.93502 24.287776,282.68028 20.650765,270.29818 20.650765,266.17081 24.287776,253.7887 31.561799,245.53396 42.472833,241.40659 46.109844,241.40659 57.020878,245.53396 64.2949,253.7887 67.931912,270.29818 67.931912,290.93502 64.2949,311.57186 57.020878,323.95397 46.109844,328.08134 38.835821,328.08134 27.924787,323.95397 24.287776,315.69923";
 
-	else {
-		//Currently hardcoded path data
-		//To-do: Allow users to specify fonts
-		var zero = "M 40.890286,241.44557 30.687127,245.57254 23.885021,257.95342 20.483968,278.58823 20.483968,290.96912 23.885021,311.60393 30.687127,323.98482 40.890286,328.11178 47.692392,328.11178 57.895551,323.98482 64.697657,311.60393 68.09871,290.96912 68.09871,278.58823 64.697657,257.95342 57.895551,245.57254 47.692392,241.44557 40.890286,241.44557";
-		var one = "M 50.289453,243.07635 50.289453,329.52761";
-		var two = "M 27.618803,262.08031 27.618803,257.95271 30.945521,249.69749 34.27224,245.56989 40.925676,241.44228 54.23255,241.44228 60.885986,245.56989 64.212704,249.69749 67.539423,257.95271 67.539423,266.20792 64.212704,274.46313 57.559268,286.84595 24.292085,328.12202 70.866141,328.12202";
-		var three = "M 33.809127,248.8729 C 45.779077,241.87747 46.887418,243.5556 53.186196,243.05913 61.663816,242.39092 65.286579,246.55715 64.812967,252.72615 64.140416,261.48642 55.207358,274.28536 40.185777,283.01419 L 52.623884,281.94331 59.295192,285.47169 62.630846,289.00007 65.9665,299.58523 65.9665,306.64193 62.630846,317.22713 55.959538,324.28383 45.952576,327.81223 35.945614,327.81223 25.938652,324.28383 22.602998,320.75553 19.267344,313.69873";
-		var four = "M 54.845427,241.51709 22.803997,300.19076 70.866142,300.19076 M 54.845427,241.51709 54.845427,329.5276";
-		var five = "M 61.700462,246.77512 26.654546,246.77512 23.149954,281.56734 26.654546,277.70154 37.168321,273.83574 47.682096,273.83574 58.19587,277.70154 65.205054,285.43315 68.709645,297.03055 68.709645,304.76216 65.205054,316.35956 58.19587,324.09117 47.682096,327.95697 37.168321,327.95697 26.654546,324.09117 23.149954,320.22537 19.645363,312.49376";
-		var six = "M 64.294901,253.7887 60.65789,245.53396 49.746856,241.40659 42.472833,241.40659 31.561799,245.53396 24.287776,257.91607 20.650765,278.55291 20.650765,299.18976 24.287776,315.69923 31.561799,323.95397 42.472833,328.08134 46.109844,328.08134 57.020878,323.95397 64.294901,315.69923 67.931912,303.31713 67.931912,299.18976 64.294901,286.80765 57.020878,278.55291 46.109844,274.42554 42.472833,274.42554 31.561799,278.55291 24.287776,286.80765 20.650765,299.18976";
-		var seven = "M 68.262659,241.73033 32.158284,328.90301 M 17.716535,241.73033 68.262659,241.73033";
-		var eight = "M 37.489233,241.44557 27.286074,245.57254 23.885021,253.82646 23.885021,262.08039 27.286074,270.33431 34.08818,274.46127 47.692392,278.58823 57.895551,282.7152 64.697657,290.96912 68.09871,299.22304 68.09871,311.60393 64.697657,319.85785 61.296604,323.98482 51.093445,328.11178 37.489233,328.11178 27.286074,323.98482 23.885021,319.85785 20.483968,311.60393 20.483968,299.22304 23.885021,290.96912 30.687127,282.7152 40.890286,278.58823 54.494498,274.46127 61.296604,270.33431 64.697657,262.08039 64.697657,253.82646 61.296604,245.57254 51.093445,241.44557 37.489233,241.44557";
-		var nine = "M 67.931912,270.29818 64.2949,282.68028 57.020878,290.93502 46.109844,295.06239 42.472833,295.06239 31.561799,290.93502 24.287776,282.68028 20.650765,270.29818 20.650765,266.17081 24.287776,253.7887 31.561799,245.53396 42.472833,241.40659 46.109844,241.40659 57.020878,245.53396 64.2949,253.7887 67.931912,270.29818 67.931912,290.93502 64.2949,311.57186 57.020878,323.95397 46.109844,328.08134 38.835821,328.08134 27.924787,323.95397 24.287776,315.69923";
-
-		pathData = [zero, one, two, three, four, five, six, seven, eight, nine];
-	}
+	pathData = [zero, one, two, three, four, five, six, seven, eight, nine];
 
 	var colon = "M 165.73227,300.21546 Z M 165.73227,253.34648 Z";
 	var arrayTime = new Array();
