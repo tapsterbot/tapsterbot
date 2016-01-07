@@ -60,7 +60,7 @@
     
 ### Amazon.com
     Qty     Description                                                         Part #          Unit Price
-    1       SainSmart Sensor Shield Digital Analog Module V4                    B006TQ314G      $12.80
+    1       SainSmart Sensor Shield Digital Analog Module V4                    B006TQ314G      $11.80
 
 ### Jameco.com
     Qty     Description             Long Description                            Part #          Unit Price
@@ -68,7 +68,10 @@
     1       USB cable               CABLE,USB2.0,A/B,3',BLACK                   222608          $1.95
     1       Alligator clip          ALLIGATOR CLIP TEST LEADS, 24 AWG WIRE      2185483         $1.95
 
-
+### Sparkfun.com
+    Qty     Description             Long Description                            Part #          Unit Price
+    1       Alligator Clip          Alligator Clip with Pigtail                 13191           $2.95 (pack of 4)
+  
 ## Tools:
 
 ### McMaster-Carr
