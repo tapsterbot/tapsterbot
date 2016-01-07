@@ -45,7 +45,7 @@
 
 ### Servocity
     Qty     Description                                             Part #          Unit Price
-    3       Hitec HS-311 servo (clockwise rotation)                 31311S00        $7.99
+    3       Hitec HS-311 servo (clockwise rotation)                 31311S          $7.99
 
 ### Staples
     Qty     Description     Long Description                        Part #          Unit Price
