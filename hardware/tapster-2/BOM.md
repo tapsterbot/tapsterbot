@@ -57,16 +57,15 @@
 ### Adafruit.com
     Qty     Description     Long Description                                    Part #          Unit Price
     1       Power adaptor   9 VDC 1000mA regulated switching power adapter      63              $6.95
+    1       Arduino Uno     Arduino Uno R3 (Atmega328 - assembled)              50              $24.95
     
 ### Amazon.com
     Qty     Description                                                         Part #          Unit Price
     1       SainSmart Sensor Shield Digital Analog Module V4                    B006TQ314G      $11.80
 
-### Jameco.com
-    Qty     Description             Long Description                            Part #          Unit Price
-    1       Arduino Uno             MCU,ARDUINO UNO R3,DIP,14DI                 2151486         $29.95
-    1       USB cable               CABLE,USB2.0,A/B,3',BLACK                   222608          $1.95
-    1       Alligator clip          ALLIGATOR CLIP TEST LEADS, 24 AWG WIRE      2185483         $1.95
+### Monoprice.com
+    Qty     Description     Long Description                                Part #          Unit Price
+    1       USB cable       3ft USB 2.0 A Male to B Male 28/24AWG Cable     5437            $1.02
 
 ### Sparkfun.com
     Qty     Description             Long Description                            Part #          Unit Price
