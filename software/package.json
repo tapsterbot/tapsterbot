@@ -19,6 +19,8 @@
    "dependencies": {
      "johnny-five": "*",
      "svg-path-parser": "*",
-     "xml2js": "*"
+     "xml2js": "*",
+     "express": "*",
+     "body-parser": "*"
    }
 }

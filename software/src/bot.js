@@ -4,9 +4,113 @@ svgRead = require("./SVGReader");
 drawing = require("./draw");
 motion = require("./motion");
 
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
+
+var jsonParser = bodyParser.json();
+
+app.get('/', function (req, res) {
+  res.send('Welcome to Tapster World!');
+});
+
+var servo1;
+var servo2;
+var servo3;
+
+app.post('/go', jsonParser, function (req, res) {
+  console.log('Go!');
+  console.log(req.body);
+  if ((typeof req.body.x === 'undefined') ||
+     (typeof req.body.y === 'undefined') ||
+     (typeof req.body.z === 'undefined')) {
+
+     res.status(400).send('Invalid request\n');
+
+  } else {
+    var x = req.body.x;
+    var y = req.body.y;
+    var z = req.body.z;
+    // Move with default easing
+    go(x, y, z);
+
+    // Move with no easing
+    //go(x, y, z, 'none');
+
+    setTimeout(function(){ res.send('OK\n') }, 250);
+  }
+
+});
+
+app.post('/circle', jsonParser, function (req, res) {
+  console.log('Circle!');
+  console.log(req.body);
+  if ((typeof req.body.x === 'undefined') ||
+     (typeof req.body.y === 'undefined') ||
+     (typeof req.body.z === 'undefined') ||
+     (typeof req.body.radius === 'undefined') ||
+     (typeof req.body.speed === 'undefined') ||
+     (typeof req.body.rotations === 'undefined') ||
+     (typeof req.body.direction === 'undefined')) {
+
+     res.status(400).send('Invalid request\n');
+
+  } else {
+    var centerX = req.body.x;
+    var centerY = req.body.y;
+    var centerZ = req.body.z;
+    var radius = req.body.radius;
+    var speed = req.body.speed;
+    var rotations = req.body.rotations;
+    var direction = req.body.direction;
+
+
+    // An array to save points on the circle
+    var points=[];
+
+    if (direction === 'ccw') { // Counter clockwise
+      for (var degree=0; degree<360*parseInt(rotations); degree++){
+          var radians = degree * Math.PI/180;
+          var x = centerX + radius * Math.cos(radians);
+          var y = centerY + radius * Math.sin(radians);
+          points.push({x:x, y:y, z:centerZ});
+      }
+    } else {  // Clockwise
+      for (var degree=360*parseInt(rotations); degree>0; degree--){
+          var radians = degree * Math.PI/180;
+          var x = centerX + radius * Math.cos(radians);
+          var y = centerY + radius * Math.sin(radians);
+          points.push({x:x, y:y, z:centerZ});
+      }
+
+    }
+
+    circle = function() {
+      for (var i=0; i<360*parseInt(rotations); i+=1) {
+        setTimeout( function(point) { go(point.x, point.y, point.z, "none") }, i*speed, points[i]);
+      }
+    }
+
+    circle();
+
+    setTimeout(function(){ res.send('OK\n') }, 250);
+  }
+
+});
+
+
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 8080;
+
+app.listen(port, function () {
+  console.log('Tapster web server listening on port ' + port);
+});
+
+
 //If a filepath is specified, load that config
 //Otherwise, resort to the default config
-//> Usage: 
+//> Usage:
 //> node bot.js "C:\Projects\Tapsterbot\software\config.js"
 if (process.argv[2]) {
   try {
@@ -36,7 +140,7 @@ else {
     console.log("Config not found. Loading default.");
     var config = require("../config.js");
   }
-} 
+}
 else {
   console.log("Config not specified. Loading default.");
   var config = require("../config.js");
@@ -149,7 +253,7 @@ board.on("ready", function() {
     }
 
     board.repl.inject({
-      dance: start_dance, 
+      dance: start_dance,
       chill: stop_dance
     }); */
 
@@ -191,7 +295,7 @@ moveServosTo = function(x, y, z) {
   rotated = rotate(reflected[0],reflected[1]);
 
   angles = k.inverse(rotated[0], rotated[1], z);
- 
+
   servo1.to((angles[1]).map(config.servo1.in_min, config.servo1.in_max, config.servo1.out_min, config.servo1.out_max));
   servo2.to((angles[2]).map(config.servo2.in_min, config.servo2.in_max, config.servo2.out_min, config.servo2.out_max));
   servo3.to((angles[3]).map(config.servo3.in_min, config.servo3.in_max, config.servo3.out_min, config.servo3.out_max));
@@ -229,7 +333,7 @@ doSetTimeout = function(x, y, z, timeDelay, easing) {
     easing = defaultEaseType;
 
   setTimeout(function() { go(x, y, z, easing) }, timer);
-  timer = timer + timeDelay; 
+  timer = timer + timeDelay;
 };
 
 
