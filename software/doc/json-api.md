@@ -1,27 +1,27 @@
 ## Go to any point:
     HTTP POST <robotURL>/go
 
-    x: center of circle, millimeters
-    y: center of circle, millimeters
-    z: center of circle, millimeters    
-    
+    x: Center of circle, millimeters (Number, float)
+    y: Center of circle, millimeters (Number, float)
+    z: Center of circle, millimeters (Number, float)
+
     Example:
-    { x: 0, 
-      y: 0, 
+    { x: 0,
+      y: 0,
       z: -144 }
 
 ## Draw a Circle:
     HTTP POST <robotURL>/circle
 
-    x: center of circle, millimeters
-    y: center of circle, millimeters
-    z: center of circle, millimeters
-    radius: radius of circle in millimeters
-    startAngle: in radians,
-    anticlockwise: boolean (true or false)
-    delay: number of milliseconds of delay to add between each point
-    rotations: number of rotations to perform, integer     
-    
+    x: Center of circle, millimeters (Number, float)
+    y: Center of circle, millimeters (Number, float)
+    z: Center of circle, millimeters (Number, float)
+    radius: Radius of circle, millimeters (Number, float)
+    startAngle: Starting angle, radians (Number, float)
+    anticlockwise: Set to true to go anticlockwise, false to go clockwise (Boolean)
+    delay: Number of milliseconds of delay to add between each point (Number, integer)
+    rotations: Number of rotations (Number, integer)
+
     Example:
     { x: 0,
       y: 0,
@@ -31,20 +31,19 @@
       anticlockwise: true,
       delay: 5,
       rotations: 5 }
-      
 
 ### Draw an Arc:
     HTTP POST <robotURL>/arc
-    
-    x: center of circle, millimeters
-    y: center of circle, millimeters
-    z: center of circle, millimeters
-    radius: radius of circle in millimeters
-    startAngle: in radians,
-    endAngle: in radians,    
-    anticlockwise: boolean (true or false)
-    delay: number of milliseconds of delay to add between each point      
-    
+
+    x: Center of circle, millimeters (Number, float)
+    y: Center of circle, millimeters (Number, float)
+    z: Center of circle, millimeters (Number, float)
+    radius: Radius of circle, millimeters (Number, float)
+    startAngle: Starting angle, radians (Number, float)
+    endAngle: Ending angle, radians (Number, float)
+    anticlockwise: Set to true to go anticlockwise, false to go clockwise (Boolean)
+    delay: Number of milliseconds of delay to add between each point (Number, integer)
+
     { x: 0,
       y: 0,
       z: -158,
