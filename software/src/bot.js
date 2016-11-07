@@ -2,6 +2,7 @@ five = require("johnny-five");
 kinematics = require("./kinematics");
 svgRead = require("./SVGReader");
 drawing = require("./draw");
+arc = require("./arc");
 motion = require("./motion");
 
 var express = require('express');
@@ -49,9 +50,10 @@ app.post('/circle', jsonParser, function (req, res) {
      (typeof req.body.y === 'undefined') ||
      (typeof req.body.z === 'undefined') ||
      (typeof req.body.radius === 'undefined') ||
-     (typeof req.body.speed === 'undefined') ||
-     (typeof req.body.rotations === 'undefined') ||
-     (typeof req.body.direction === 'undefined')) {
+     (typeof req.body.startAngle === 'undefined') ||
+     (typeof req.body.anticlockwise === 'undefined') ||
+     (typeof req.body.delay === 'undefined') ||
+     (typeof req.body.rotations === 'undefined')) {
 
      res.status(400).send('Invalid request\n');
 
@@ -60,43 +62,70 @@ app.post('/circle', jsonParser, function (req, res) {
     var centerY = req.body.y;
     var centerZ = req.body.z;
     var radius = req.body.radius;
-    var speed = req.body.speed;
+    var startAngle = req.body.startAngle;
+    var anticlockwise = req.body.anticlockwise;
+    var delay = req.body.delay;
     var rotations = req.body.rotations;
-    var direction = req.body.direction;
 
+    // An array to save points on the arc
+    var points = arc(centerX, centerY, centerZ, radius, startAngle, startAngle, anticlockwise);
 
-    // An array to save points on the circle
-    var points=[];
-
-    if (direction === 'ccw') { // Counter clockwise
-      for (var degree=0; degree<360*parseInt(rotations); degree++){
-          var radians = degree * Math.PI/180;
-          var x = centerX + radius * Math.cos(radians);
-          var y = centerY + radius * Math.sin(radians);
-          points.push({x:x, y:y, z:centerZ});
-      }
-    } else {  // Clockwise
-      for (var degree=360*parseInt(rotations); degree>0; degree--){
-          var radians = degree * Math.PI/180;
-          var x = centerX + radius * Math.cos(radians);
-          var y = centerY + radius * Math.sin(radians);
-          points.push({x:x, y:y, z:centerZ});
-      }
-
-    }
-
-    circle = function() {
-      for (var i=0; i<360*parseInt(rotations); i+=1) {
-        setTimeout( function(point) { go(point.x, point.y, point.z, "none") }, i*speed, points[i]);
+    // Go to each point in the arc
+    for (var rotation = 0; rotation < rotations; rotation += 1) {
+      for (var i = 0; i < points.length; i += 1) {
+        setTimeout( function(point) {
+          go(point.x, point.y, point.z, "none")
+        },
+        i*delay + points.length*delay*rotation,
+        points[i]);
       }
     }
 
-    circle();
+    // Return
+    setTimeout(function(){ res.send('OK\n') }, points.length*delay*rotations );
+  }
+});
 
-    setTimeout(function(){ res.send('OK\n') }, 250);
+
+app.post('/arc', jsonParser, function (req, res) {
+  console.log('Arc!');
+  console.log(req.body);
+  if ((typeof req.body.x === 'undefined') ||
+     (typeof req.body.y === 'undefined') ||
+     (typeof req.body.z === 'undefined') ||
+     (typeof req.body.radius === 'undefined') ||
+     (typeof req.body.startAngle === 'undefined') ||
+     (typeof req.body.endAngle === 'undefined') ||
+     (typeof req.body.anticlockwise === 'undefined') ||
+     (typeof req.body.delay === 'undefined')) {
+
+     res.status(400).send('Invalid request\n');
+
+  } else {
+    var centerX = req.body.x;
+    var centerY = req.body.y;
+    var centerZ = req.body.z;
+    var radius = req.body.radius;
+    var startAngle = req.body.startAngle;
+    var endAngle = req.body.endAngle;
+    var anticlockwise = req.body.anticlockwise;
+    var delay = req.body.delay;
+
+    // An array to save points on the arc
+    var points = arc(centerX, centerY, centerZ, radius, startAngle, endAngle, anticlockwise);
+
+    // Go to each point in the arc
+    var i;
+    for (i = 0; i < points.length; i += 1) {
+      setTimeout( function(point) { go(point.x, point.y, point.z, "none") }, i*delay, points[i]);
+    }
+
+    // Return
+    setTimeout(function(){ res.send('OK\n') }, i*delay );
   }
 
 });
+
 
 
 // set the port of our application
