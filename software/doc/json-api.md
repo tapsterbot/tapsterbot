@@ -32,7 +32,7 @@
       delay: 5,
       rotations: 5 }
 
-### Draw an Arc:
+## Draw an Arc:
     HTTP POST <robotURL>/arc
 
     x: Center of circle, millimeters (Number, float)
