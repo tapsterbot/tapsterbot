@@ -4,11 +4,11 @@
     ![Tapsterbot](http://hugs.github.io/img/tapster-2-desk.jpg)
 </span>
 
-##Dependencies
+## Dependencies
 - Node.js
 - One Tapster robot
 
-##Getting Started
+## Getting Started
 
 1. Download and install the Arduino Client: [http://arduino.cc/en/Guide/HomePage](http://arduino.cc/en/Guide/HomePage)
 2. Follow the setup procedure, and use the "blink" test script to verify your Arduino is working.
