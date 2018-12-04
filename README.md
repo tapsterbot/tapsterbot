@@ -1,8 +1,7 @@
 ## Tapster - Mobile Automation Robot
 
-<span>
-    ![Tapsterbot](http://hugs.github.io/img/tapster-2-desk.jpg)
-</span>
+
+![Tapsterbot](http://hugs.github.io/img/tapster-2-desk.jpg)
 
 ##Dependencies
 - Node.js
