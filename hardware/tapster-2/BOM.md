@@ -19,7 +19,7 @@
     3       Side plate
     1       Arduino plate
 
-### Indigo.com
+### IndigoInstruments.com
     Qty     Description                                             Part #          Unit Price
     24      Rod magnet, D5 x 7.5mm, Nd rare earth, N42              44201-7.5       $0.44
 
