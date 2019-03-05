@@ -3,6 +3,7 @@
 beam_width    = 8;
 hole_diameter = 5.25;
 hole_radius   = hole_diameter / 2;
+center_hole   = 10;
 
 clipping_distance = 26;
 
@@ -10,7 +11,7 @@ difference(){
   cylinder(r=56/2, h=9, $fn=3, center=true);
 
   translate([0,0,-10])
-  cylinder(r=4.3, h=20, $fn=30);
+  cylinder(d = center_hole, h=20, $fn=30);
 
 
   rotate([60,90,0])
