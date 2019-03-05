@@ -19,7 +19,7 @@
     3       Side plate
     1       Arduino plate
 
-### Indigo.com
+### IndigoInstruments.com
     Qty     Description                                             Part #          Unit Price
     24      Rod magnet, D5 x 7.5mm, Nd rare earth, N42              44201-7.5       $0.44
 
@@ -29,7 +29,9 @@
     5       4-40 1/2 in     Black-Oxide Alloy Steel Socket Head Cap Screw   91251A110   $8.34 per pack of 100
     6       6-32 3/4 in     Black-Oxide Alloy Steel Socket Head Cap Screw   91251A151   $8.50 per pack of 100
     30      10-32 3/4 in    Black-Oxide Alloy Steel Socket Head Cap Screw   91251A345   $9.93 per pack of 100
-    4       10-32 1 in      Black-Oxide Alloy Steel Socket Head Cap Screw   91251A347   $7.82 per pack of 50     
+    4       10-32 1 in      Black-Oxide Alloy Steel Socket Head Cap Screw   91251A347   $7.82 per pack of 50
+    ?       #10 Washer      For #10 Screw, 18-8 Stainless Steel Washer      92141A011   $2.30 per pack of 100
+    ?       #6 Washer       For #6 Screw, 18-8 Stainless Steel Washer       92141A008   $1.17 per pack of 100
 
     Hex Nuts:
     Qty     Description             Long Description:                                       Part #      Unit Price
