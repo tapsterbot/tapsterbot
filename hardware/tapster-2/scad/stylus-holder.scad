@@ -1,7 +1,7 @@
 
 
 beam_width    = 8;
-hole_diameter = 5.25;
+hole_diameter = 5.1;
 hole_radius   = hole_diameter / 2;
 center_hole   = 10;
 
