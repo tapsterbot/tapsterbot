@@ -28,8 +28,8 @@
     Qty     Description     Long Description:                               Part #     Unit Price
     5       4-40 1/2 in     Black-Oxide Alloy Steel Socket Head Cap Screw   91251A110   $8.34 per pack of 100
     6       6-32 3/4 in     Black-Oxide Alloy Steel Socket Head Cap Screw   91251A151   $8.50 per pack of 100
-    30      10-32 3/4 in    Black-Oxide Alloy Steel Socket Head Cap Screw   91251A345   $9.93 per pack of 100
-    4       10-32 1 in      Black-Oxide Alloy Steel Socket Head Cap Screw   91251A347   $7.82 per pack of 50
+    30      10-32 7/8 in    Black-Oxide Alloy Steel Socket Head Cap Screw   91251A346   $6.68 per pack of 100
+    4       10-32 1 in      Black-Oxide Alloy Steel Socket Head Cap Screw   91251A347   $8.85 per pack of 50
     ?       #10 Washer      For #10 Screw, 18-8 Stainless Steel Washer      92141A011   $2.30 per pack of 100
     ?       #6 Washer       For #6 Screw, 18-8 Stainless Steel Washer       92141A008   $1.17 per pack of 100
 
@@ -49,9 +49,9 @@
     Qty     Description                                             Part #          Unit Price
     3       Hitec HS-311 servo (clockwise rotation)                 31311S          $7.99
 
-### Staples
+### Ebay
     Qty     Description     Long Description                        Part #          Unit Price
-    1       Tablet stylus   QVS ISE-SV Extending Mini-Stylus        IM1NZ0711       $3.99
+    1       Tablet stylus   Touch Screen Stylus                     4894462150535       $1.88
 
 
 ## Electronics:
@@ -59,11 +59,14 @@
 ### Adafruit.com
     Qty     Description     Long Description                                    Part #          Unit Price
     1       Power adaptor   9 VDC 1000mA regulated switching power adapter      63              $6.95
-    1       Arduino Uno     Arduino Uno R3 (Atmega328 - assembled)              50              $24.95
     
 ### Amazon.com
     Qty     Description                                                         Part #          Unit Price
     1       SainSmart Sensor Shield Digital Analog Module V4                    B006TQ314G      $11.80
+
+### Jameco
+    Qty     Description                                                         Part #          Unit Price
+    1       Arduino Uno     Arduino Uno R3 DIP Edition (Revision 3)             2151486         $21.95
 
 ### Monoprice.com
     Qty     Description     Long Description                                Part #          Unit Price
@@ -88,22 +91,3 @@
 ## Materials:
 For 3D Printers:
 ABS plastic from Ultimachine
-
-For CNC Mills:
-Plywood and Basswood from Blick Arts / Midwest Products
-
-
-## Miscellaneous:
-
-### Uline
-    Qty     Description
-    1       8X8x14 box
-    1       Red bag
-
-
-
-
-
-
-
-
