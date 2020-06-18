@@ -229,17 +229,17 @@ board.on("ready", function() {
         range: [35, 145]
     }); */
 
-  servo1 = five.Servo({
+  servo1 = new five.Servo({
       pin: 9,
       range: [0, 100]
   });
 
-  servo2 = five.Servo({
+  servo2 = new five.Servo({
       pin: 10,
       range: [0, 100]
   });
 
-  servo3 = five.Servo({
+  servo3 = new five.Servo({
       pin: 11,
       range: [0, 100]
   });
